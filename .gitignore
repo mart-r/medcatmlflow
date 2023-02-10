@@ -1,0 +1,16 @@
+# hidden files
+.*
+
+# virtual environment
+venv
+
+# compiled
+**/__pycache
+**/*.pyc
+
+# mlflow
+**/mlruns
+
+# data
+**/data
+
