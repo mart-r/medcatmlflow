@@ -27,8 +27,7 @@ def main():
     loader = Loader(model_type=ModelType.get_type(args.modeltype))
     model = loader.load_model(args.modelpath)
     suites = loader.load_regr_suite(args.regressionsuites)
-    for suite in suites:
-        tracker.track_model(model, suite)
+    tracker.track_model(model, suites)
 
 
 if __name__ == "__main__":
