@@ -14,6 +14,10 @@ from tracking.performance import RegressionSuite, RegressionMetrics
 CONCEPT_BANK: ConceptBank = get_concept_bank()
 
 
+MAX_ONTOLOGY_LENGTH = 20
+MAX_DECRIPTION_LENGTH = 20
+
+
 def get_name_from_modelcard(d: dict) -> str:
     """Get model name from model card.
 
@@ -29,7 +33,11 @@ def get_name_from_modelcard(d: dict) -> str:
     # 'Description': self.config.version.description,
     # 'Source Ontology': self.config.version.ontology,
     description = d["Description"]
-    ontology = d["Source Ontology"]
+    ontology = str(d["Source Ontology"])
+    if len(ontology) > MAX_ONTOLOGY_LENGTH:
+        ontology = ontology[:MAX_ONTOLOGY_LENGTH] + " ..."
+    if len(description) > MAX_DECRIPTION_LENGTH:
+        description = description[:MAX_DECRIPTION_LENGTH] + " ..."
     return f"CAT with ontology '{ontology}' and description '{description}'"
 
 
