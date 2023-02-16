@@ -11,6 +11,27 @@ class RegressionMetrics:
     fail: int = 0
     extra: list[Any] = field(default_factory=list)
 
+    @property
+    def total(self):
+        """The total recorded results"""
+        return self.success + self.fail
+
+    @property
+    def success_rate(self):
+        """The fraction of successful results"""
+        total = self.total
+        if total == 0:
+            raise ValueError("No results have been recorded!")
+        return self.success / total
+
+    @property
+    def fail_rate(self):
+        """The fraction of failing results"""
+        total = self.total
+        if total == 0:
+            raise ValueError("No results have been recorded!")
+        return self.fail / total
+
 
 class RegressionSuite(ABC):
     @abstractmethod
