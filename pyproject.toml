@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medcatmlflow"
+authors = [
+    {name = "Mart Ratas", email = "mart.ratas@kcl.ac.uk"},
+]
+description = "MedCAT model tracking with MLFlow"
+readme = "README.rst"
+requires-python = ">=3.8"
+keywords = ["MedCAT", "MLFlow"]
+license = {text = "Elastic License 2.0"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "mlflow~=2.1.1",
+    "dill~=0.3.4",
+    "medcat~=1.6.0"
+]
+version = "0.0.1"
