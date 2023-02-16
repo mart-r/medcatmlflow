@@ -1,5 +1,7 @@
 import os
 
+from mlflow.pyfunc import PythonModel, PythonModelContext
+
 from medcat.cat import CAT
 from medcat.utils.regression.checking import RegressionChecker
 from medcat.utils.regression.results import MultiDescriptor
@@ -18,10 +20,34 @@ MAX_ONTOLOGY_LENGTH = 20
 MAX_DECRIPTION_LENGTH = 20
 
 
+def get_ontology_and_version(model_card: dict) -> tuple[str, str]:
+    # This is more or less copied from MedCAT unreleased repo
+    # TODO - use the new release along with the method from there
+    ont_list = model_card["Source Ontology"]
+    if isinstance(ont_list, list):
+        ont1 = ont_list[0]
+    elif isinstance(ont_list, str):
+        ont1 = ont_list
+    else:
+        raise KeyError(f"Unknown source ontology: {ont_list}")
+    # find ontology
+    if "SNOMED" in ont1.upper():
+        return "SNOMED-CT", ont1
+    elif "UMLS" in ont1.upper():
+        return "UMLS", ont1
+    elif "ICD" in ont1.upper():
+        return "ICD", ont1
+    else:
+        raise ValueError(f"Unknown ontology: {ont1}")
+
+
 def get_name_from_modelcard(d: dict) -> str:
     """Get model name from model card.
 
-    Currently, this combines the description with the ontology.
+    Currently, this combines:
+        The medCAT version
+        The model ID
+        The ontology
 
     Args:
         d (dict): The model card in dict form.
@@ -29,16 +55,10 @@ def get_name_from_modelcard(d: dict) -> str:
     Returns:
         str: The resulting model name.
     """
-    # example model card
-    # 'Description': self.config.version.description,
-    # 'Source Ontology': self.config.version.ontology,
-    description = d["Description"]
-    ontology = str(d["Source Ontology"])
-    if len(ontology) > MAX_ONTOLOGY_LENGTH:
-        ontology = ontology[:MAX_ONTOLOGY_LENGTH] + " ..."
-    if len(description) > MAX_DECRIPTION_LENGTH:
-        description = description[:MAX_DECRIPTION_LENGTH] + " ..."
-    return f"CAT with ontology '{ontology}' and description '{description}'"
+    version = d["MedCAT Version"]
+    model_id = d["Model ID"]
+    ontology, _ = get_ontology_and_version(d)
+    return f"MedCAT_v{version}_{ontology}_{model_id}"
 
 
 def get_annotations_from_raw(d: dict) -> list[Annotation]:
