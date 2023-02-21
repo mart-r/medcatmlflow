@@ -54,6 +54,11 @@ You will then be able to access the UI at _http://127.0.0.1:5000/_ (by default).
 If you press **Experiments** at the top, you will be able to see the recorded experiments/models.
 
 If you tick multiple models, you will be able to compare their metrics between eachother.
+E.g
+
+<!-- originally 2740 × 1200 -->
+<!-- doing quarter size 685 x 300 -->
+<img src="example_comparison.png" alt="Example of model comparison - v1.2 vs v1.4" width="685" height="300">
 
 If you wish to access a specific model, you need to click on _pyfunc_ under the _Models_ column for the experiment / model you wish to acces.
 
