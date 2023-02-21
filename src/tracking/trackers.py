@@ -1,7 +1,11 @@
 from models.model import Model
 from tracking.performance import RegressionSuite
+import logging
 
 import mlflow
+
+
+logger = logging.getLogger(__name__)
 
 
 class ModelTracker:
@@ -19,25 +23,28 @@ class ModelTracker:
         extra = metrics.extra[0]
         if len(extra) > 200:
             extra = extra[:200] + " ..."
-        print(
+        logger.info(
             "RESULTING METRICS:\n"
             + f"Successes: {metrics.success} / {total} ({100 * sperc:.2f}%)\n"
             + f"Failures : {metrics.fail} / {total} ({100 * fperc:.2f}%)\n"
             + f"Extra    : {extra}"
         )
         suite_name = regression.get_name()
-        print("LOGGING")
         mlflow.log_param("model_id", model.get_model_tag())
         mlflow.log_param("model_name", model.get_model_name())
         mlflow.log_metric(f"metric_success_{suite_name}", sperc)
-        pass
+
+    def save_model(self, model: Model) -> None:
+        mlflow.pyfunc.log_model(
+            artifact_path=model.get_model_name(),
+            python_model=model.get_mlflow_model(),
+            artifacts={"model_path": model.get_model_path()},
+        )
 
     def track_model(self, model: Model, regressions: list[RegressionSuite]):
-        model_name = model.get_model_name()
-        model_id = model.get_model_tag()
-        with mlflow.start_run() as run:
-            uri = run.info.run_id
-            full_name = f"{model_name}_{model_id}"
-            mlflow.register_model(f"runs:/{uri}", name=full_name)
+        with mlflow.start_run():
             for regression in regressions:
                 self._track_model_single_regression(model, regression)
+            logger.info(f"Saving model: {model.get_model_name()}")
+            self.save_model(model)
+            # mlflow.register_model(f"runs:/{uri}", name=full_name)

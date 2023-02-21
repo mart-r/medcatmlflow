@@ -92,15 +92,33 @@ def get_annotations_from_raw(d: dict) -> list[Annotation]:
     return output
 
 
+class MedCATMLFlowWrapper(PythonModel):
+    def load_context(self, context: PythonModelContext) -> None:
+        self.cat = CAT.load_model_pack(context.artifacts["medcat_modelpack"])
+
+    def predict(self, context: PythonModelContext, model_input: str):
+        return self.cat.get_entities(model_input)
+
+
 class MedCATModel(Model):
     """Describes the MEDCAT model."""
 
-    def __init__(self, cat: CAT) -> None:
+    def __init__(
+        self, model_path: str, cat: CAT, mlflow_model: MedCATMLFlowWrapper
+    ) -> None:
+        self.model_path = model_path
         self.cat = cat
+        self.mlflow_model = mlflow_model
         self._name = get_name_from_modelcard(cat.get_model_card(as_dict=True))
+
+    def get_mlflow_model(self) -> PythonModel:
+        return self.mlflow_model
 
     def get_model_name(self) -> str:
         return self._name
+
+    def get_model_path(self) -> str:
+        return self.model_path
 
     def get_model_tag(self) -> str:
         return str(self.cat.config.version.id)
@@ -122,7 +140,8 @@ def get_medcat_model(model_pack_path: str) -> Model:
         Model: The resulting model.
     """
     cat = CAT.load_model_pack(model_pack_path)
-    return MedCATModel(cat)
+    mlflow_model = MedCATMLFlowWrapper()
+    return MedCATModel(model_pack_path, cat, mlflow_model)
 
 
 class MedCATRegressionSuit(RegressionSuite):

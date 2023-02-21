@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+
+from mlflow.pyfunc import PythonModel
+
 from models.annotations import Annotation
 
 
@@ -6,11 +9,27 @@ class Model(ABC):
     """Describes a model in a very limited sense of annotating documents."""
 
     @abstractmethod
+    def get_mlflow_model(self) -> PythonModel:
+        """Get the MLFlow model.
+
+        Returns:
+            PythonModel: The MLFlow model
+        """
+
+    @abstractmethod
     def get_model_name(self) -> str:
         """Get the name of the model.
 
         Returns:
             str: The name of the model.
+        """
+
+    @abstractmethod
+    def get_model_path(self) -> str:
+        """Get the path to the file on disk corresponding to this model.
+
+        Returns:
+            str: The file path.
         """
 
     @abstractmethod

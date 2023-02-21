@@ -1,7 +1,11 @@
 import argparse
+import logging
 
 from tracking.trackers import ModelTracker
 from models.loader import ModelType, Loader
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_args() -> argparse.Namespace:
@@ -20,8 +24,16 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def setup_logging(args: argparse.Namespace):
+    pkg_logger = logging.getLogger(__package__)
+    pkg_logger.addHandler(logging.StreamHandler())
+    pkg_logger.setLevel("INFO")
+
+
 def main():
     args = get_args()
+
+    setup_logging(args)
 
     tracker = ModelTracker()
     loader = Loader(model_type=ModelType.get_type(args.modeltype))
