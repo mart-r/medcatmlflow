@@ -1,4 +1,5 @@
 import os
+import logging
 
 from mlflow.pyfunc import PythonModel, PythonModelContext
 
@@ -18,6 +19,8 @@ CONCEPT_BANK: ConceptBank = get_concept_bank()
 
 MAX_ONTOLOGY_LENGTH = 20
 MAX_DECRIPTION_LENGTH = 20
+
+logger = logging.getLogger(__name__)
 
 
 def get_ontology_and_version(model_card: dict) -> tuple[str, str]:
@@ -183,8 +186,11 @@ def get_medcat_regression(paths: list[str]) -> list[RegressionSuite]:
         try:
             rc = RegressionChecker.from_yaml(path)
         except Exception as e:  # TODO - use specific exception
-            # TODO - logging
-            print("ISSUE with generating checker from", path, e)
+            logger.warning(
+                "Exception raised while generating checker from %s",
+                path,
+                exc_info=e,  # pass exception
+            )
             continue
         name = os.path.basename(path)[:-4]  # remove .yml
         suites.append(MedCATRegressionSuit(name, rc))
