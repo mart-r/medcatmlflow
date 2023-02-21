@@ -3,6 +3,7 @@
 
 # virtual environment
 venv
+venv*
 
 # compiled
 **/__pycache
