@@ -18,7 +18,7 @@ classifiers = [
 dependencies = [
     "mlflow~=2.1.1",
     "dill~=0.3.4",
-    "medcat~=1.6.0",
+    "medcat~=1.7.0",
     "spacy>=3.1.0", # for medcat compatibility
 ]
 version = "0.0.1"
