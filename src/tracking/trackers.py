@@ -16,7 +16,7 @@ class ModelTracker:
         self, model: Model, regression: RegressionSuite
     ) -> None:
         metrics = regression.get_result(model)
-        print("For", id(regression), regression.get_name())
+        logger.info("Looking at model %s", regression.get_name())
         total = metrics.success + metrics.fail
         sperc = metrics.success / total
         fperc = metrics.fail / total
@@ -47,4 +47,3 @@ class ModelTracker:
                 self._track_model_single_regression(model, regression)
             logger.info(f"Saving model: {model.get_model_name()}")
             self.save_model(model)
-            # mlflow.register_model(f"runs:/{uri}", name=full_name)
