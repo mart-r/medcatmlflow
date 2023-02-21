@@ -1,5 +1,6 @@
 import argparse
 import logging
+from typing import Protocol
 
 from tracking.trackers import ModelTracker
 from models.loader import ModelType, Loader
@@ -8,7 +9,29 @@ from models.loader import ModelType, Loader
 logger = logging.getLogger(__name__)
 
 
-def get_args() -> argparse.Namespace:
+class CLIArguments(Protocol):
+    @property
+    def modelpath(self) -> str:
+        """The model pack path."""
+
+    @property
+    def modeltype(self) -> str:
+        """The model type."""
+
+    @property
+    def regressionsuites(self) -> str:
+        """The regression suite paths."""
+
+    @property
+    def silent(self) -> bool:
+        """Whether or not the loggers should be silent."""
+
+    @property
+    def debug(self) -> bool:
+        """Whether or not to output verbose/debug output."""
+
+
+def get_args() -> CLIArguments:
     parser = argparse.ArgumentParser()
     parser.add_argument("modelpath", help="Path to the model being loaded")
     parser.add_argument(
@@ -21,13 +44,25 @@ def get_args() -> argparse.Namespace:
         help="The paths to the regression suites to be tested",
         nargs="+",
     )
+    parser.add_argument(
+        "--debug",
+        help="Allow verbose output",
+        action="store_true",  # for debug / verbose output
+    )
+    parser.add_argument(
+        "--silent",
+        help="Supress all output",
+        action="store_true",  # for silent operation
+    )
     return parser.parse_args()
 
 
-def setup_logging(args: argparse.Namespace):
+def setup_logging(args: CLIArguments):
     pkg_logger = logging.getLogger(__package__)
-    pkg_logger.addHandler(logging.StreamHandler())
-    pkg_logger.setLevel("INFO")
+    if not args.silent:
+        pkg_logger.addHandler(logging.StreamHandler())
+    if args.debug:
+        pkg_logger.setLevel("DEBUG")
 
 
 def main():
