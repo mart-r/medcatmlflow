@@ -24,7 +24,7 @@ That will use the `pyproject.toml` file to install the package along with the ne
 In order to run some regression tests you will need to have
 - A MedCAT model (version 1.3+ should work)
 - At least one regression test suite (multiple recommended)
-  - Take a look at the regression test tutorial (**TODO**) for specifics on how to generate these
+  - Take a look at the regression test tutorial ([here](https://htmlpreview.github.io/?https://github.com/CogStack/MedCATtutorials/blob/main/notebooks/specialised/Comparing_Models_with_RegressionSuite.html)) for specifics on how to generate these
 
 
 ## Running regression suites on a model
