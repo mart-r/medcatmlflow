@@ -1,0 +1,15 @@
+version: '1'
+services:
+  mlflow-ui:
+    image: my-mlflow-ui
+    ports:
+      - 8000:5000
+    volumes:
+      - medcattrainer_api-media:/app/media-api
+      - medcattrainer_api-db:/app/db
+
+volumes:
+  medcattrainer_api-media:
+    external: True
+  medcattrainer_api-db:
+    external: True
