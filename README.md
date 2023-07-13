@@ -7,13 +7,13 @@ It uses regression tooling within `medcat` to generate metrics.
 
 # Installing _medcatmlflow_
 
-It is recommended to install the package on a local environment (i.e create one with `python -m venv venv` and activate using `source venv/bin/activate` if you do not have access to one).
+We've packaged the project into a docker container.
 
-The package can be installed using 
+All the user needs to do is run
 ```
-pip install .
+docker-compose up
 ```
-That will use the `pyproject.toml` file to install the package along with the necessary dependencies.
+Or with the `-d` option to run it in detached mode.
 
 
 # How to use _medcatmlflow_
