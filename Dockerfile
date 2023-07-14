@@ -1,7 +1,5 @@
 FROM python:3.10
 
-RUN echo "Wazzup"
-
 COPY src /app/src
 
 COPY mlruns /app/mlruns
@@ -14,4 +12,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-CMD ["mlflow", "ui", "--host", "0.0.0.0"]
+CMD ["python", "src/main.py"]
