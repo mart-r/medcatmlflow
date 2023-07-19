@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browse Files</title>
+</head>
+<body>
+    <h1>Browse Files</h1>
+    <ul>
+        {% for file in files %}
+            <li>
+                <a href="/info/{{ file.name }}">{{ file.name }}</a>
+                - Version: {{ file.version }}   Last Update: {{ file['update ']}}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

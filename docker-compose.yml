@@ -9,6 +9,9 @@ services:
     volumes:
       - medcattrainer_api-media:/app/media-api
       - medcattrainer_api-db:/app/db
+    environment:
+      - MODEL_STORAGE_PATH=/app/models
+      - MLFLOW_DB_URI=sqlite:///mlflow.db
 
 volumes:
   medcattrainer_api-media:

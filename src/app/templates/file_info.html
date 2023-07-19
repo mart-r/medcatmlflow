@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Information</title>
+    <!-- Add any additional CSS or meta tags here if needed -->
+</head>
+<body>
+    <h1>File Information</h1>
+    
+    <a href="/info/{{ info['file_name'] }}" download>
+        <button>Download File</button>
+    </a>
+    <table>
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, value in info.items() %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
