@@ -30,10 +30,6 @@ def upload_file():
         file_path = os.path.join(STORAGE_PATH, uploaded_file.filename)
         uploaded_file.save(file_path)
 
-        # Log the file and custom information in mlflow
-        # with MLFLOW_CLIENT.get_run() as run:
-        #     mlflow.log_artifact(file_path)
-        #     mlflow.log_param("custom_info", custom_info)
         experiment_name = custom_info
         # Check if the experiment exists, create it if it doesn't
         exp = mlflow.get_experiment_by_name(experiment_name)
@@ -42,10 +38,6 @@ def upload_file():
         else:
             experiment_id = mlflow.create_experiment(experiment_name)
 
-        # from mlflow.entities import Run
-        # r: Run = MLFLOW_CLIENT.get_run()
-        # r.data
-        # MLFLOW_CLIENT.model
         run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
         run_id = run.info.run_id
         MLFLOW_CLIENT.log_artifact(run_id, file_path)
@@ -73,12 +65,6 @@ def browse_files():
     # Print the list of models and their information
     files_with_info = []
     for model in models:
-        # print(f"Name: {model.name}")
-        # print(f"Version: {model.latest_versions[0].version}")
-        # print(f"Creation Time: {model.creation_timestamp}")
-        # print(f"Last Updated Time: {model.last_updated_timestamp}")
-        # print(f"Description: {model.description}")
-        # print("-----")
         cur_info = {
             "name": model.name,
             "version": model.latest_versions[0].version,
