@@ -100,6 +100,10 @@ def browse_files():
     return render_template("browse_files.html", files=files_with_info)
 
 
+def _fix_performance(str_perf: str) -> dict:
+    return eval(str_perf)
+
+
 def get_info(file_path: str) -> dict:
     basename = os.path.basename(file_path).rsplit(".", 1)[0]
     model_version = basename[-VERSION_STR_LEN:]
@@ -107,6 +111,8 @@ def get_info(file_path: str) -> dict:
         version=model_version).first()
     if saved_meta:
         cur_info = saved_meta.as_dict()
+        if "performance" in cur_info:
+            cur_info["performance"] = _fix_performance(cur_info["performance"])
     else:
         cur_info = {"ISSUES": "Metadata not saved",
                     "looked for": model_version,

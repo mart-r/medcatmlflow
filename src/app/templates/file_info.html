@@ -19,12 +19,40 @@
         </thead>
         <tbody>
             {% for key, value in info.items() %}
-            <tr>
-                <td>{{ key }}</td>
-                <td>{{ value }}</td>
-            </tr>
+                {% if key != 'performance' %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Check if "performance" exists in the info dictionary -->
+    {% if 'performance' in info %}
+        <h2>Performance Information</h2>
+        
+        {% for performance_key, performance_value in info['performance'].items() %}
+            <h3>{{ performance_key }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in performance_value.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+        
+    {% endif %}
 </body>
 </html>
