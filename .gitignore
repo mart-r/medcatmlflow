@@ -15,3 +15,5 @@ venv*
 # data
 **/data
 
+# egg
+src/medcatmlflow.egg-info
