@@ -7,4 +7,6 @@ if [ ! -d "$MODEL_STORAGE_PATH" ]; then
 fi
 
 # Run your application
-python src/app/app.py
+cd src
+python -m flask --app app.app run --host "0.0.0.0"
+# python src/app/app.py

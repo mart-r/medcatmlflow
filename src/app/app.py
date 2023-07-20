@@ -6,17 +6,35 @@ import mlflow
 from mlflow.tracking import MlflowClient
 import os
 
+from medcat.cat import CAT
+
+from .models import db, ModelData, VERSION_STR_LEN
+
 app = Flask(__name__)
 
 # Configure MLflow
 DB_URI = os.environ.get("MLFLOW_DB_URI")
 MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
-# mlflow.set_tracking_uri(DB_URI)
 
 STORAGE_PATH = os.environ.get("MODEL_STORAGE_PATH")
 
+SQL_DB_URI = os.environ.get("METADATA_DATABASE_URI")
 
-# def perform_post():
+app.config['SQLALCHEMY_DATABASE_URI'] = SQL_DB_URI
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+
+
+def _get_meta(file_path: str, model_name: str) -> ModelData:
+    print('Loading CAT to get model info')
+    cat = CAT.load_model_pack(file_path)
+    version = cat.config.version.id
+    version_history = ",".join(cat.config.version.history)
+    performance = str(cat.config.version.performance)
+    print('Found the model info/data')
+    return ModelData(model_file_name=model_name, version=version,
+                     version_history=version_history, performance=performance)
 
 
 # Endpoint to handle file uploads
@@ -51,6 +69,10 @@ def upload_file():
 
         # Create a model version associated with the registered model and file
         MLFLOW_CLIENT.create_model_version(model_name, artifact_uri)
+        # db stuff
+        meta = _get_meta(file_path, model_name)
+        db.session.add(meta)
+        db.session.commit()
         return "File uploaded successfully!"
         # return perform_post()
     return render_template("upload.html")
@@ -79,17 +101,24 @@ def browse_files():
 
 
 def get_info(file_path: str) -> dict:
-    # TODO - load data
-    return {"file_name": os.path.basename(file_path)}
+    basename = os.path.basename(file_path).rsplit(".", 1)[0]
+    model_version = basename[-VERSION_STR_LEN:]
+    saved_meta = ModelData.query.filter_by(
+        version=model_version).first()
+    if saved_meta:
+        cur_info = saved_meta.as_dict()
+    else:
+        cur_info = {"ISSUES": "Metadata not saved",
+                    "looked for": model_version,
+                    "file path": file_path,
+                    "basename": basename,
+                    "SAVED META": str(saved_meta)}
+    return cur_info
 
 
 # Endpoint to download a specific file
 @app.route("/info/<filename>")
 def show_file_info(filename):
-    # Retrieve the file from MLflow
-    # You can use mlflow.download_artifacts to get the file path
-
-    # Mock file path for demonstration purposes
     file_path = os.path.join(STORAGE_PATH, filename)
 
     return render_template("file_info.html", info=get_info(file_path))
