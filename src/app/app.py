@@ -2,7 +2,7 @@
 
 from flask import Flask, render_template, request, send_file
 
-import mlflow
+# import mlflow
 from mlflow.tracking import MlflowClient
 import os
 
@@ -37,6 +37,14 @@ def _get_meta(file_path: str, model_name: str) -> ModelData:
                      version_history=version_history, performance=performance)
 
 
+def _get_experiment_id(experiment_name):
+    exp = MLFLOW_CLIENT.get_experiment_by_name(experiment_name)
+    if exp:
+        return exp.experiment_id
+    else:
+        return MLFLOW_CLIENT.create_experiment(experiment_name)
+
+
 # Endpoint to handle file uploads
 @app.route("/upload", methods=["GET", "POST"])
 def upload_file():
@@ -48,13 +56,7 @@ def upload_file():
         file_path = os.path.join(STORAGE_PATH, uploaded_file.filename)
         uploaded_file.save(file_path)
 
-        experiment_name = custom_info
-        # Check if the experiment exists, create it if it doesn't
-        exp = mlflow.get_experiment_by_name(experiment_name)
-        if exp:
-            experiment_id = exp.experiment_id
-        else:
-            experiment_id = mlflow.create_experiment(experiment_name)
+        experiment_id = _get_experiment_id(custom_info)
 
         run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
         run_id = run.info.run_id
