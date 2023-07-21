@@ -203,5 +203,10 @@ def download_file(filename):
     return send_file(filename, as_attachment=True)
 
 
+@app.route("/")
+def landing_page():
+    return render_template("landing.html")
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
