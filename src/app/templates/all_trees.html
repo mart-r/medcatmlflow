@@ -1,0 +1,14 @@
+<!-- all_trees.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Trees</title>
+</head>
+<body>
+    <h1>All Trees</h1>
+    {% for tree in all_trees_with_links %}
+        <h2>Tree</h2>
+        <pre>{{ tree | safe }}</pre>  <!-- Use the 'safe' filter to render the HTML links -->
+    {% endfor %}
+</body>
+</html>

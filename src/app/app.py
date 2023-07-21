@@ -10,6 +10,7 @@ from typing import Optional
 from medcat.cat import CAT
 
 from .models import db, ModelData, VERSION_STR_LEN
+from .utils import build_nodes, get_all_trees
 
 app = Flask(__name__)
 
@@ -173,10 +174,9 @@ def show_file_info(filename):
 
 
 def get_history(file_path: str) -> dict:
-    basename = os.path.basename(file_path).rsplit(".", 1)[0]
-    model_version = basename[-VERSION_STR_LEN:]
+    basename = os.path.basename(file_path)
     saved_meta = ModelData.query.filter_by(
-        version=model_version).first()
+        model_file_name=basename).first()
     if saved_meta:
         cur_info = saved_meta.as_dict()
         versions = cur_info["version_history"].split(",")
@@ -185,7 +185,7 @@ def get_history(file_path: str) -> dict:
         return history
     else:
         return [("ISSUES", "Metadata not saved"),
-                ("looked for", model_version),
+                # ("looked for", model_version),
                 ("file path", file_path),
                 ("basename", basename),
                 ("SAVED META", str(saved_meta))]
@@ -206,6 +206,29 @@ def download_file(filename):
 @app.route("/")
 def landing_page():
     return render_template("landing.html")
+
+
+@app.route("/all_trees")
+def all_trees():
+    # Query for registered models
+    models = MLFLOW_CLIENT.list_registered_models()
+
+    # Create a list of tuples containing tree representations and model links
+    data = {}
+    for model in models:
+        model_name = model.name
+        basename = os.path.basename(model_name)
+        saved_meta = ModelData.query.filter_by(
+            model_file_name=basename).first()
+        if saved_meta:
+            version = saved_meta.version
+            versions = saved_meta.version_history.split(",")
+            data[version] = versions
+    nodes = build_nodes(data).values()
+    # Pass the _get_hist_link function as the model_link_func parameter
+    all_trees_with_links = get_all_trees(nodes, _get_hist_link)
+    return render_template("all_trees.html",
+                           all_trees_with_links=all_trees_with_links)
 
 
 if __name__ == "__main__":

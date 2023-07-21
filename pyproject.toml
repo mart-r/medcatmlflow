@@ -22,6 +22,7 @@ dependencies = [
     "spacy>=3.1.0", # for medcat compatibility,
     "Flask",
     "Flask-SQLAlchemy",
-    "SQLAlchemy"
+    "SQLAlchemy",
+    "anytree"
 ]
 version = "0.0.1"
