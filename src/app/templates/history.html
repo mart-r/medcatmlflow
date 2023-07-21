@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File History</title>
+    <!-- Add any additional CSS or meta tags here if needed -->
+</head>
+<body>
+    <h1>File History</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for version, link in history %}
+                <tr>
+                    <td>{{ version }}</td>
+                    <td><a href="{{ link }}">Info</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

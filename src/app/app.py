@@ -2,9 +2,9 @@
 
 from flask import Flask, render_template, request, send_file
 
-# import mlflow
 from mlflow.tracking import MlflowClient
 import os
+from typing import Optional
 
 from medcat.cat import CAT
 
@@ -124,12 +124,46 @@ def get_info(file_path: str) -> dict:
     return cur_info
 
 
-# Endpoint to download a specific file
+def _get_hist_link(version: str) -> str:
+    saved: Optional[ModelData]
+    saved = ModelData.query.filter_by(version=version).first()
+    if saved:
+        return f"/info/{saved.model_file_name}"
+    return "N/A"
+
+
+# Endpoint for info for specific file
 @app.route("/info/<filename>")
 def show_file_info(filename):
     file_path = os.path.join(STORAGE_PATH, filename)
 
     return render_template("file_info.html", info=get_info(file_path))
+
+
+def get_history(file_path: str) -> dict:
+    basename = os.path.basename(file_path).rsplit(".", 1)[0]
+    model_version = basename[-VERSION_STR_LEN:]
+    saved_meta = ModelData.query.filter_by(
+        version=model_version).first()
+    if saved_meta:
+        cur_info = saved_meta.as_dict()
+        versions = cur_info["version_history"].split(",")
+        history = [(version, _get_hist_link(version)) for version in versions
+                   if version]
+        return history
+    else:
+        return [("ISSUES", "Metadata not saved"),
+                ("looked for", model_version),
+                ("file path", file_path),
+                ("basename", basename),
+                ("SAVED META", str(saved_meta))]
+
+
+# Endpoint for history of a specific file
+@app.route("/history/<filename>")
+def show_file_history(filename):
+    file_path = os.path.join(STORAGE_PATH, filename)
+    return render_template("history.html", history=get_history(file_path))
 
 
 @app.route("/download/<filename>")
