@@ -222,7 +222,9 @@ def all_trees():
             model_file_name=basename).first()
         if saved_meta:
             version = saved_meta.version
-            versions = saved_meta.version_history.split(",")
+            # remove empty versions
+            versions = [ver for ver in saved_meta.version_history.split(",")
+                        if ver]
             data[version] = versions
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter

@@ -113,8 +113,6 @@ def get_all_trees(nodes: Iterator[Node],
     for root in find_roots(nodes):
         tree_repr = ""
         for pre, _, node in RenderTree(root):
-            if not node.name:
-                continue
             # Get the link to the corresponding model
             model_link = model_link_func(node.name)
             full_link = f"<a href='{model_link}'>{model_link}</a>"
