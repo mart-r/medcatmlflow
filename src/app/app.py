@@ -1,8 +1,9 @@
 # app.py (Backend)
 
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for
 
 from mlflow.tracking import MlflowClient
+from mlflow import MlflowException
 import os
 from typing import Optional
 
@@ -100,6 +101,37 @@ def browse_files():
         files_with_info.append(cur_info)
 
     return render_template("browse_files.html", files=files_with_info)
+
+
+@app.route("/delete/<filename>")
+def delete_file(filename):
+    file_path = os.path.join(STORAGE_PATH, filename)
+
+    # Remove the file from the filesystem
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # Delete the corresponding MLflow data
+    model_name = filename
+    model = MLFLOW_CLIENT.get_registered_model(model_name)
+    if model:
+        arg = "name='{}'".format(model_name)
+        model_versions = MLFLOW_CLIENT.search_model_versions(arg)
+        for version in model_versions:
+            run_id = version.run_id
+            try:
+                MLFLOW_CLIENT.delete_run(run_id)
+            except MlflowException:
+                pass
+        MLFLOW_CLIENT.delete_registered_model(model_name)
+
+    # Delete metadata from the database
+    model_data = ModelData.query.filter_by(model_file_name=filename).first()
+    if model_data:
+        db.session.delete(model_data)
+        db.session.commit()
+
+    return redirect(url_for("browse_files"))
 
 
 def _fix_performance(str_perf: str) -> dict:
