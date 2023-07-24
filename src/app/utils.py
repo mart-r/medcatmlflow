@@ -115,7 +115,10 @@ def get_all_trees(nodes: Iterator[Node],
         for pre, _, node in RenderTree(root):
             # Get the link to the corresponding model
             model_link = model_link_func(node.name)
-            full_link = f"<a href='{model_link}'>{model_link}</a>"
+            if model_link == "N/A":
+                full_link = model_link
+            else:
+                full_link = f"<a href='{model_link}'>{model_link}</a>"
             tree_repr += f"{pre}{node.name} (Model link: {full_link})\n"
         trees.append(tree_repr)
     return trees
