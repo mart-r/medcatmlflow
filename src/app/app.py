@@ -39,26 +39,33 @@ def _get_meta(file_path: str, model_name: str) -> ModelData:
                      version_history=version_history, performance=performance)
 
 
-def _get_experiment_id(experiment_name):
-    exp = MLFLOW_CLIENT.get_experiment_by_name(experiment_name)
-    if exp:
-        return exp.experiment_id
-    else:
-        return MLFLOW_CLIENT.create_experiment(experiment_name)
-
-
 # Endpoint to handle file uploads
 @app.route("/upload", methods=["GET", "POST"])
 def upload_file():
     if request.method == "POST":
         uploaded_file = request.files["file"]
         model_description = request.form.get("model_name")
+        # Check if the checkbox is checked
+        overwrite = request.form.get("overwrite") == "1"
 
         # Save the uploaded file to the desired location
         file_path = os.path.join(STORAGE_PATH, uploaded_file.filename)
+        if os.path.exists(file_path) and not overwrite:
+            return ("File already exists -"
+                    " tick the overwrite tick box if you wish to overwrite")
+        found = ModelData.query.filter_by(
+            model_file_name=uploaded_file.filename).first()
+        if found:
+            return ("Model already exists -"
+                    " tick the overwrite tick box if you wish to overwrite")
         uploaded_file.save(file_path)
 
-        experiment_id = _get_experiment_id(model_description)
+        exp = MLFLOW_CLIENT.get_experiment_by_name(model_description)
+        if exp:
+            return ("Model by this description exists -"
+                    " choose anotehr description / name")
+        else:
+            experiment_id = MLFLOW_CLIENT.create_experiment(model_description)
 
         run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
         run_id = run.info.run_id
