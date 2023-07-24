@@ -52,18 +52,18 @@ def _get_experiment_id(experiment_name):
 def upload_file():
     if request.method == "POST":
         uploaded_file = request.files["file"]
-        custom_info = request.form.get("custom_info")
+        model_name = request.form.get("model_name")
 
         # Save the uploaded file to the desired location
         file_path = os.path.join(STORAGE_PATH, uploaded_file.filename)
         uploaded_file.save(file_path)
 
-        experiment_id = _get_experiment_id(custom_info)
+        experiment_id = _get_experiment_id(model_name)
 
         run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
         run_id = run.info.run_id
         MLFLOW_CLIENT.log_artifact(run_id, file_path)
-        MLFLOW_CLIENT.log_param(run_id, "custom_info", custom_info)
+        MLFLOW_CLIENT.log_param(run_id, "model_name", model_name)
 
         model_name = uploaded_file.filename
         _ = MLFLOW_CLIENT.create_registered_model(model_name)
