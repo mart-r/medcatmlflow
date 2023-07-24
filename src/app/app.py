@@ -52,33 +52,32 @@ def _get_experiment_id(experiment_name):
 def upload_file():
     if request.method == "POST":
         uploaded_file = request.files["file"]
-        model_name = request.form.get("model_name")
+        model_description = request.form.get("model_name")
 
         # Save the uploaded file to the desired location
         file_path = os.path.join(STORAGE_PATH, uploaded_file.filename)
         uploaded_file.save(file_path)
 
-        experiment_id = _get_experiment_id(model_name)
+        experiment_id = _get_experiment_id(model_description)
 
         run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
         run_id = run.info.run_id
         MLFLOW_CLIENT.log_artifact(run_id, file_path)
-        MLFLOW_CLIENT.log_param(run_id, "model_name", model_name)
+        MLFLOW_CLIENT.log_param(run_id, "model_description", model_description)
 
-        model_name = uploaded_file.filename
-        _ = MLFLOW_CLIENT.create_registered_model(model_name)
+        model_filename = uploaded_file.filename
+        _ = MLFLOW_CLIENT.create_registered_model(model_filename)
 
         # Get the artifact URI for the logged file
         artifact_uri = "runs:/{}/{}".format(run_id, file_path)
 
         # Create a model version associated with the registered model and file
-        MLFLOW_CLIENT.create_model_version(model_name, artifact_uri)
+        MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
         # db stuff
-        meta = _get_meta(file_path, model_name)
+        meta = _get_meta(file_path, model_filename)
         db.session.add(meta)
         db.session.commit()
         return "File uploaded successfully!"
-        # return perform_post()
     return render_template("upload.html")
 
 
