@@ -8,7 +8,7 @@ from werkzeug.datastructures import FileStorage  # used in Flask
 
 from .utils import DuplciateUploadException, ModelMetaData
 from .utils import build_nodes, get_all_trees
-from .mdecat_integration import create_meta
+from .medcat_integration import create_meta
 
 # Configure MLflow
 DB_URI = os.environ.get("MLFLOW_DB_URI")
