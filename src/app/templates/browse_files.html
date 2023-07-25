@@ -9,7 +9,7 @@
         {% for file in files %}
             <li>
                 <a href="/info/{{ file.name }}">{{ file.name }}</a>
-                - Version: {{ file.version }}   Last Update: {{ file['update ']}}
+                - Description: "{{ file.description }}"   Version: {{ file.version }}
                 <p><a href="/history/{{ file.name }}">History</a> | <a href="/delete/{{ file.name }}" onclick="return confirm('Are you sure you want to delete this file?')">Delete</a></p>
             </li>
         {% endfor %}

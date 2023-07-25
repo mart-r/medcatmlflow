@@ -80,11 +80,8 @@ def get_files_with_info() -> list[dict]:
     for model in models:
         cur_info = {
             "name": model.name,
-            "version": model.latest_versions[0].version,
-            "creation": model.creation_timestamp,
-            "update": model.last_updated_timestamp,
+            "version": model.tags['version'],
             "description": model.description,
-            "tags": model.tags,
         }
         files_with_info.append(cur_info)
     return files_with_info
