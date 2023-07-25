@@ -44,9 +44,6 @@ def delete_file(filename):
 @app.route("/info/<filename>")
 def show_file_info(filename):
     file_path = os.path.join(STORAGE_PATH, filename)
-    import logging
-    logging.error("TYPES:", [(key, type(val))
-                             for key, val in get_info(file_path).items()])
     return render_template("file_info.html", info=get_info(file_path))
 
 
