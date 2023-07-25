@@ -1,22 +1,23 @@
-FROM python:3.10
+# STAGE 1
 
-# COPY src /app/src
-
-# COPY mlruns /app/mlruns
-
-COPY src/app /app/src/app
-
-COPY requirements.txt /app/requirements.txt
+FROM python:3.10 as builder
 
 WORKDIR /app
 
+COPY requirements.txt /app/requirements.txt
+
 RUN pip install -r requirements.txt
 
+# STAGE 2
+FROM python:3.10
+
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+
+COPY src/app /app/src/app
+
+WORKDIR /app
+
 EXPOSE 5000
-
-# RUN mkdir -p $MODEL_STORAGE_PATH
-
-# CMD ["python", "src/app/app.py"]
 
 # Set execute permissions on the script
 RUN chmod +x /app/src/app/run_app.sh
