@@ -1,3 +1,4 @@
+from dataclasses import dataclass, fields
 from typing import Iterator, Callable
 
 from anytree import Node, RenderTree
@@ -122,3 +123,37 @@ def get_all_trees(nodes: Iterator[Node],
             tree_repr += f"{pre}{node.name} (Model link: {full_link})\n"
         trees.append(tree_repr)
     return trees
+
+
+class DuplciateUploadException(ValueError):
+
+    def __init__(self, msg) -> None:
+        super().__init__(msg)
+        self.msg = msg
+
+
+@dataclass
+class ModelMetaData:
+    version: str
+    version_history: list[str]
+    model_file_name: str
+    performance: dict
+
+    def as_dict(self) -> dict:
+        return {
+            "version": self.version,
+            "version_history": self.version_history,
+            "model_file_name": self.model_file_name,
+            "performance": self.performance
+        }
+
+    @classmethod
+    def get_keys(cls) -> set[str]:
+        return set(field.name for field in fields(cls))
+
+    @classmethod
+    def from_mlflow_model(cls, model) -> 'ModelMetaData':
+        kwargs = {}
+        for key in cls.get_keys():
+            kwargs[key] = model.tags[key]
+        return cls(**kwargs)
