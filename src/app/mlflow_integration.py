@@ -148,6 +148,12 @@ def get_meta_model(model: RegisteredModel, storage_path: str) -> ModelMetaData:
         logger.warning("Recalculating meta - not everything was saved on disk")
         file_path = os.path.join(storage_path, model.tags['model_file_name'])
         meta = create_meta(file_path, model.name)
+        for new_key, new_value in meta.as_dict().items():
+            if new_key in model.tags and model.tags[new_key] == new_value:
+                continue
+            MLFLOW_CLIENT.set_registered_model_tag(model.name,
+                                                   new_key,
+                                                   new_value)
         model.tags.update(meta.as_dict())
     return meta
 
