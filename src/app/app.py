@@ -66,7 +66,7 @@ def landing_page():
 
 @app.route("/all_trees")
 def all_trees():
-    all_trees_with_links = get_all_trees_with_links()
+    all_trees_with_links = get_all_trees_with_links(STORAGE_PATH)
     return render_template("all_trees.html",
                            all_trees_with_links=all_trees_with_links)
 

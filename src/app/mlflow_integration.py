@@ -1,6 +1,8 @@
 import os
 from typing import Optional
 
+import logging
+
 from mlflow import MlflowClient, MlflowException
 from mlflow.entities.model_registry import RegisteredModel
 
@@ -13,6 +15,8 @@ from .medcat_integration import create_meta
 # Configure MLflow
 DB_URI = os.environ.get("MLFLOW_DB_URI")
 MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
+
+logger = logging.getLogger(__name__)
 
 
 def _create_new_experiment(file_path: str,
@@ -113,7 +117,7 @@ def get_info(file_path: str) -> dict:
     basename = os.path.basename(file_path)
     model = MLFLOW_CLIENT.get_registered_model(basename)
     if model:
-        metadata = ModelMetaData.from_mlflow_model(model)
+        metadata = get_meta_model(model, os.path.dirname(file_path))
         cur_info = metadata.as_dict()
         if ('performance' in cur_info
                 and not isinstance(cur_info['performance'], dict)):
@@ -140,11 +144,22 @@ def _get_hist_link(version: str, _tag_key: str = 'version') -> str:
     return "N/A"
 
 
+def get_meta_model(model: RegisteredModel, storage_path: str) -> ModelMetaData:
+    try:
+        meta = ModelMetaData.from_mlflow_model(model)
+    except KeyError:  # old model data with not all the keys
+        logger.warning("Recalculating meta - not everything was saved on disk")
+        file_path = os.path.join(storage_path, model.tags['model_file_name'])
+        meta = create_meta(file_path, model.name)
+        model.tags.update(meta.as_dict())
+    return meta
+
+
 def get_history(file_path: str) -> dict:
     basename = os.path.basename(file_path)
     model = MLFLOW_CLIENT.get_registered_model(basename)
     if model:
-        meta = ModelMetaData.from_mlflow_model(model)
+        meta = get_meta_model(model, os.path.dirname(file_path))
         cur_info = meta.as_dict()
         versions = cur_info["version_history"].split(",")
         history = [(version, _get_hist_link(version)) for version in versions
@@ -158,14 +173,14 @@ def get_history(file_path: str) -> dict:
                 ("SAVED META", str(model))]
 
 
-def get_all_trees_with_links():
+def get_all_trees_with_links(storage_path: str):
     # Query for registered models
     models = MLFLOW_CLIENT.list_registered_models()
 
     # Create a list of tuples containing tree representations and model links
     data = {}
     for model in models:
-        saved_meta = ModelMetaData.from_mlflow_model(model)
+        saved_meta = get_meta_model(model, storage_path)
         if saved_meta:
             version = saved_meta.version
             # remove empty versions
