@@ -128,8 +128,6 @@ def get_info(file_path: str) -> dict:
 
 
 def _get_hist_link(version: str, _tag_key: str = 'version') -> str:
-    # saved: Optional[ModelData]
-    # saved = ModelData.query.filter_by(version=version).first()
     all_models = MLFLOW_CLIENT.search_registered_models()
     model: Optional[RegisteredModel] = None
     for found_model in all_models:

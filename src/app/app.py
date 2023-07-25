@@ -4,7 +4,6 @@ from flask import Flask, render_template, request, send_file, redirect, url_for
 
 import os
 
-# from .models import db, ModelData, VERSION_STR_LEN
 from .mlflow_integration import attempt_upload, get_files_with_info
 from .mlflow_integration import delete_mlflow_file, get_info
 from .mlflow_integration import get_history, get_all_trees_with_links
@@ -12,13 +11,6 @@ from .mlflow_integration import get_history, get_all_trees_with_links
 app = Flask(__name__)
 
 STORAGE_PATH = os.environ.get("MODEL_STORAGE_PATH")
-
-# SQL_DB_URI = os.environ.get("METADATA_DATABASE_URI")
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = SQL_DB_URI
-# db.init_app(app)
-# with app.app_context():
-#     db.create_all()
 
 
 # Endpoint to handle file uploads
