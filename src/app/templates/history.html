@@ -12,10 +12,16 @@
         </tr>
     </thead>
     <tbody>
-        {% for version, link in history %}
+        {% for version, filename in history %}
             <tr>
                 <td>{{ version }}</td>
-                <td><a href="{{ link }}">Info</a></td>
+                <td>
+                    {% if filename %}
+                        <a href="{{ url_for('show_file_info', filename=filename) }}">Info</a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
     </tbody>

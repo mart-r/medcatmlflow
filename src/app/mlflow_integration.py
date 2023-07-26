@@ -144,7 +144,7 @@ def get_info(file_path: str) -> dict:
     return cur_info
 
 
-def _get_hist_link(version: str, _tag_key: str = 'version') -> str:
+def _get_file_name(version: str, _tag_key: str = 'version') -> str:
     all_models = MLFLOW_CLIENT.search_registered_models()
     model: Optional[RegisteredModel] = None
     for found_model in all_models:
@@ -153,8 +153,15 @@ def _get_hist_link(version: str, _tag_key: str = 'version') -> str:
             model = found_model
             break
     if model:
-        return f"/info/{model.tags['model_file_name']}"
-    return "N/A"
+        return model.tags['model_file_name']
+    return None
+
+
+def _get_hist_link(version: str, _tag_key: str = 'version') -> str:
+    file_name = _get_file_name(version, _tag_key)
+    if file_name:
+        return f"/info/{file_name}"
+    return file_name  # None
 
 
 def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
@@ -185,15 +192,19 @@ def get_meta_model(model: RegisteredModel, storage_path: str) -> ModelMetaData:
     return meta
 
 
-def get_history(file_path: str) -> dict:
+def get_history(file_path: str) -> list:
     basename = os.path.basename(file_path)
     model = MLFLOW_CLIENT.get_registered_model(basename)
     if model:
         meta = get_meta_model(model, os.path.dirname(file_path))
         cur_info = meta.as_dict()
         versions = cur_info["version_history"].split(",")
-        history = [(version, _get_hist_link(version)) for version in versions
-                   if version]
+        history = []
+        for version in versions:
+            if not version:
+                continue
+            cur_name = _get_file_name(version)
+            history.append((version, cur_name))
         return history
     else:
         return [("ISSUES", "Metadata not saved"),
