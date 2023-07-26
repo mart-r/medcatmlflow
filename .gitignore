@@ -10,10 +10,16 @@ venv*
 **/*.pyc
 
 # mlflow
-**/mlruns
+**/*mlruns*
 
 # data
 **/data
 
+# databse
+*.db
+
 # egg
 src/medcatmlflow.egg-info
+
+# build
+build
