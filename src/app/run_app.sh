@@ -6,6 +6,8 @@ if [ ! -d "$MODEL_STORAGE_PATH" ]; then
   mkdir -p "$MODEL_STORAGE_PATH"
 fi
 
+mkdir -p $LOGS_PATH
+
 # Run your application
 cd src
 python -m flask --app app.app run --host "0.0.0.0"
