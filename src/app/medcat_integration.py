@@ -92,14 +92,17 @@ def _remove_half(d: dict[str, Any], smallest: bool = True) -> None:
 
 
 def _attempt_fix_big(*dicts: list[dict[str, Any]],
-                     limit: int = 5000) -> list[dict[str, Any]]:
-    for d in dicts:
+                     limit: int = 5000) -> tuple[list[dict[str, Any]],
+                                                 list[bool]]:
+    changes = [False for _ in dicts]
+    for i, d in enumerate(dicts):
         s = str(d)
         while len(s) > limit:
             logger.info("Truncating dict from length %d to half size", len(s))
             _remove_half(d)
             s = str(d)
-    return dicts
+            changes[i] = True
+    return dicts, changes
 
 
 def create_meta(file_path: str, model_name: str) -> ModelMetaData:
@@ -111,10 +114,15 @@ def create_meta(file_path: str, model_name: str) -> ModelMetaData:
     cui2average_confidence = copy.deepcopy(cat.cdb.cui2average_confidence)
     cui2count_train = copy.deepcopy(cat.cdb.cui2count_train)
     (cui2average_confidence,
-     cui2count_train) = _attempt_fix_big(cui2average_confidence,
-                                         cui2count_train)
+     cui2count_train), changes = _attempt_fix_big(cui2average_confidence,
+                                                  cui2count_train)
+    part_names = ['cui2average_confidence', 'cui2count_train']
+    changed_parts = [part_name
+                     for part_name, change in zip(part_names, changes)
+                     if change]
     return ModelMetaData(model_file_name=model_name, version=version,
                          version_history=version_history,
                          performance=performance,
                          cui2average_confidence=cui2average_confidence,
-                         cui2count_train=cui2count_train)
+                         cui2count_train=cui2count_train,
+                         changed_parts=changed_parts)

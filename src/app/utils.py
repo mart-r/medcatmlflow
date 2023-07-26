@@ -140,6 +140,7 @@ class ModelMetaData:
     performance: dict
     cui2average_confidence: dict
     cui2count_train: dict
+    changed_parts: list[str]
 
     def as_dict(self) -> dict:
         return {
@@ -149,6 +150,7 @@ class ModelMetaData:
             "performance": self.performance,
             "cui2average_confidence": self.cui2average_confidence,
             "cui2count_train": self.cui2count_train,
+            "changed_parts": self.changed_parts,
         }
 
     @classmethod
