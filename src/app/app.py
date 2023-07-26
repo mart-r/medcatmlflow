@@ -1,6 +1,6 @@
 # app.py (Backend)
 
-from flask import Flask, render_template, request, send_file, redirect, url_for
+from flask import Flask, render_template, request, send_file, jsonify
 
 import os
 import logging
@@ -42,10 +42,14 @@ def browse_files():
     return render_template("browse_files.html", files=files_with_info)
 
 
-@app.route("/delete/<filename>")
-def delete_file(filename):
+@app.route("/delete_file", methods=["POST"])
+def delete_file():
+    filename = request.form.get("filename")
+    if not filename:
+        return jsonify({"error": "Filename not provided"}), 400
+
     delete_mlflow_file(filename, STORAGE_PATH)
-    return redirect(url_for("browse_files"))
+    return jsonify({"message": "File deleted successfully"}), 200
 
 
 # Endpoint for info for specific file
