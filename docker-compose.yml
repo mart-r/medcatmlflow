@@ -12,6 +12,7 @@ services:
     environment:
       - MODEL_STORAGE_PATH=/app/db/medcatmlflow/models/
       - MLFLOW_DB_URI=sqlite:///mlflow.db
+      - LOGS_PATH=/app/logs/
 
 volumes:
   medcattrainer_api-media:

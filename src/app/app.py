@@ -14,8 +14,7 @@ from .mlflow_integration import get_history, get_all_trees_with_links
 app = Flask(__name__)
 
 STORAGE_PATH = os.environ.get("MODEL_STORAGE_PATH")
-LOG_PATH = os.environ.get("LOGS_PATH", os.path.join("..", "..", "logs",
-                                                    "medcatmlflow.log"))
+LOG_PATH = os.environ.get("LOGS_PATH", os.path.join("..", "..", "logs"))
 LOG_BACKUP_DAYS = int(os.environ.get("LOG_BACKUP_DAYS", "30"))
 
 # setup logging
@@ -24,7 +23,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 # Define the log file and log format
-log_file = os.path.join(os.path.dirname(__file__), LOG_PATH)
+log_file = os.path.join(os.path.dirname(__file__),
+                        os.path.join(LOG_PATH, "medcatmlflow.log"))
 log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
 # Add a rotating file handler, which creates a new log file every day
