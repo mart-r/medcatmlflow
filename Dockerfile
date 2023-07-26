@@ -19,6 +19,8 @@ WORKDIR /app
 
 EXPOSE 5000
 
+RUN mkdir -p /app/logs
+
 # Set execute permissions on the script
 RUN chmod +x /app/src/app/run_app.sh
 

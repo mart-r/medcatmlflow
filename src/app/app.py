@@ -3,6 +3,9 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for
 
 import os
+import sys
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 from .mlflow_integration import attempt_upload, get_files_with_info
 from .mlflow_integration import delete_mlflow_file, get_info
@@ -11,6 +14,29 @@ from .mlflow_integration import get_history, get_all_trees_with_links
 app = Flask(__name__)
 
 STORAGE_PATH = os.environ.get("MODEL_STORAGE_PATH")
+LOG_PATH = os.environ.get("LOGS_PATH", os.path.join("..", "..", "logs",
+                                                    "medcatmlflow.log"))
+LOG_BACKUP_DAYS = int(os.environ.get("LOG_BACKUP_DAYS", "30"))
+
+# setup logging
+# Create a root logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# Define the log file and log format
+log_file = os.path.join(os.path.dirname(__file__), LOG_PATH)
+log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Add a rotating file handler, which creates a new log file every day
+file_handler = TimedRotatingFileHandler(log_file, when="midnight",
+                                        backupCount=LOG_BACKUP_DAYS)
+file_handler.setFormatter(log_format)
+logger.addHandler(file_handler)
+
+# Add a stream handler to log to stdout (Docker container's console)
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(log_format)
+logger.addHandler(stream_handler)
 
 
 # Endpoint to handle file uploads
