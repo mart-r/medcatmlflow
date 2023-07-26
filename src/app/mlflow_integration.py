@@ -52,6 +52,9 @@ def attempt_upload(uploaded_file: FileStorage,
     except DuplciateUploadException as e:
         return e.msg
 
+    # save
+    uploaded_file.save(file_path)
+
     run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
     run_id = run.info.run_id
     MLFLOW_CLIENT.log_artifact(run_id, file_path)
@@ -59,16 +62,29 @@ def attempt_upload(uploaded_file: FileStorage,
 
     model_filename = uploaded_file.filename
 
-    # db stuff
-    meta = create_meta(file_path, model_filename)
-    MLFLOW_CLIENT.create_registered_model(model_filename,
-                                          tags=meta.as_dict(),
-                                          description=model_description)
-    # Get the artifact URI for the logged file
-    artifact_uri = "runs:/{}/{}".format(run_id, file_path)
-    # Create a model version associated with the registered model and file
-    MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
-    uploaded_file.save(file_path)
+    try:
+        # db stuff
+        meta = create_meta(file_path, model_filename)
+        MLFLOW_CLIENT.create_registered_model(model_filename,
+                                              tags=meta.as_dict(),
+                                              description=model_description)
+        # Get the artifact URI for the logged file
+        artifact_uri = "runs:/{}/{}".format(run_id, file_path)
+        # Create a model version associated with the registered model and file
+        MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
+    except Exception as e:
+        logger.error("Unable to store model %", uploaded_file.filename,
+                     exc_info=e)
+        # do cleanup on disk
+        os.remove(file_path)
+        if file_path.endswith('zip'):
+            folder_path = file_path[:-4]
+            if os.path.exists(folder_path):
+                os.removedirs(folder_path)
+        # delet MLFLOW stuff
+        MLFLOW_CLIENT.delete_experiment(experiment_id)
+        MLFLOW_CLIENT.delete_run(run_id)
+        return f"Unable to store model {uploaded_file.filename}: {e}"
 
 
 def get_files_with_info() -> list[dict]:
