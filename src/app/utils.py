@@ -1,7 +1,18 @@
 from dataclasses import dataclass, fields
 from typing import Iterator, Callable
+import os
+import sys
 
 from anytree import Node, RenderTree
+
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+
+LOG_PATH = os.environ.get("MEDCATMLFLOW_LOGS_PATH",
+                          os.path.join("..", "..", "logs"))
+LOG_BACKUP_DAYS = int(os.environ.get("MEDCATMLFLOW_LOG_BACKUP_DAYS", "30"))
+LOG_LEVEL = os.environ.get("MEDCATMLFLOW_LOG_LEVEL", "INFO")
 
 
 def _set_parent(node_dict: dict[str, Node],
@@ -163,3 +174,23 @@ class ModelMetaData:
         for key in cls.get_keys():
             kwargs[key] = model.tags[key]
         return cls(**kwargs)
+
+
+def setup_logging(logger: logging.Logger) -> None:
+    logger.setLevel(LOG_LEVEL)
+
+    # Define the log file and log format
+    log_file = os.path.join(os.path.dirname(__file__),
+                            os.path.join(LOG_PATH, "medcatmlflow.log"))
+    log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+    # Add a rotating file handler, which creates a new log file every day
+    file_handler = TimedRotatingFileHandler(log_file, when="midnight",
+                                            backupCount=LOG_BACKUP_DAYS)
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+
+    # Add a stream handler to log to stdout (Docker container's console)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(log_format)
+    logger.addHandler(stream_handler)
