@@ -51,7 +51,6 @@ def attempt_upload(uploaded_file: FileStorage,
                                                overwrite)
     except DuplciateUploadException as e:
         return e.msg
-    uploaded_file.save(file_path)
 
     run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
     run_id = run.info.run_id
@@ -69,6 +68,7 @@ def attempt_upload(uploaded_file: FileStorage,
     artifact_uri = "runs:/{}/{}".format(run_id, file_path)
     # Create a model version associated with the registered model and file
     MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
+    uploaded_file.save(file_path)
 
 
 def get_files_with_info() -> list[dict]:
