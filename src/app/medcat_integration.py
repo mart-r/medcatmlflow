@@ -1,6 +1,8 @@
 import copy
 
-from typing import Optional
+import numbers
+
+from typing import Any, Optional
 
 import logging
 
@@ -67,14 +69,52 @@ def _load_CAT(file_path: str, new_model: Optional[str] = None,
     return _try_update(file_path, new_model, overwrite)
 
 
+def _remove_half(d: dict[str, Any], smallest: bool = True) -> None:
+    # this expects all the values to be of the same
+    # (or similar) type so they all can (or cannot)
+    # be compared
+    all_keys = list(d.keys())
+    half_length = len(all_keys)//2
+    key0 = all_keys[0]
+    val0 = d[key0]
+    is_numeric = isinstance(val0, numbers.Number)
+    if is_numeric:
+        # remove the smallest (or biggest) elements
+        ordered_keys = sorted(all_keys, key=lambda k: d[k],
+                              reverse=not smallest)
+        for key in ordered_keys[:half_length]:
+            del d[key]
+    else:
+        # remove random
+        # i.e the first ones that come up
+        for key in all_keys[:half_length]:
+            del d[key]
+
+
+def _attempt_fix_big(*dicts: list[dict[str, Any]],
+                     limit: int = 5000) -> list[dict[str, Any]]:
+    for d in dicts:
+        s = str(d)
+        while len(s) > limit:
+            logger.info("Truncating dict from length %d to half size", len(s))
+            _remove_half(d)
+            s = str(d)
+    return dicts
+
+
 def create_meta(file_path: str, model_name: str) -> ModelMetaData:
-    # print('Loading CAT to get model info')
     cat = _load_CAT(file_path)
     version = cat.config.version.id
     version_history = ",".join(cat.config.version.history)
     # make sure it's a deep copy
     performance = copy.deepcopy(cat.config.version.performance)
-    # print('Found the model info/data')
+    cui2average_confidence = copy.deepcopy(cat.cdb.cui2average_confidence)
+    cui2count_train = copy.deepcopy(cat.cdb.cui2count_train)
+    (cui2average_confidence,
+     cui2count_train) = _attempt_fix_big(cui2average_confidence,
+                                         cui2count_train)
     return ModelMetaData(model_file_name=model_name, version=version,
                          version_history=version_history,
-                         performance=performance)
+                         performance=performance,
+                         cui2average_confidence=cui2average_confidence,
+                         cui2count_train=cui2count_train)

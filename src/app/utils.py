@@ -138,13 +138,17 @@ class ModelMetaData:
     version_history: list[str]
     model_file_name: str
     performance: dict
+    cui2average_confidence: dict
+    cui2count_train: dict
 
     def as_dict(self) -> dict:
         return {
             "version": self.version,
             "version_history": self.version_history,
             "model_file_name": self.model_file_name,
-            "performance": self.performance
+            "performance": self.performance,
+            "cui2average_confidence": self.cui2average_confidence,
+            "cui2count_train": self.cui2count_train,
         }
 
     @classmethod
