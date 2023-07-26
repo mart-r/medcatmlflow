@@ -13,7 +13,7 @@ from .utils import build_nodes, get_all_trees
 from .medcat_integration import create_meta
 
 # Configure MLflow
-DB_URI = os.environ.get("MLFLOW_DB_URI")
+DB_URI = os.environ.get("MEDCATMLFLOW_DB_URI")
 MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
 
 logger = logging.getLogger(__name__)

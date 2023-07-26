@@ -13,10 +13,11 @@ from .mlflow_integration import get_history, get_all_trees_with_links
 
 app = Flask(__name__)
 
-STORAGE_PATH = os.environ.get("MODEL_STORAGE_PATH")
-LOG_PATH = os.environ.get("LOGS_PATH", os.path.join("..", "..", "logs"))
-LOG_BACKUP_DAYS = int(os.environ.get("LOG_BACKUP_DAYS", "30"))
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+STORAGE_PATH = os.environ.get("MEDCATMLFLOW_MODEL_STORAGE_PATH")
+LOG_PATH = os.environ.get("MEDCATMLFLOW_LOGS_PATH",
+                          os.path.join("..", "..", "logs"))
+LOG_BACKUP_DAYS = int(os.environ.get("MEDCATMLFLOW_LOG_BACKUP_DAYS", "30"))
+LOG_LEVEL = os.environ.get("MEDCATMLFLOW_LOG_LEVEL", "INFO")
 
 # setup logging
 # Create a root logger

@@ -10,10 +10,11 @@ services:
       - medcattrainer_api-media:/app/media-api
       - medcattrainer_api-db:/app/db
     environment:
-      - MODEL_STORAGE_PATH=/app/db/medcatmlflow/models/
-      - MLFLOW_DB_URI=sqlite:///mlflow.db
-      - LOGS_PATH=/app/logs/
-      - LOG_LEVEL=INFO
+      - MEDCATMLFLOW_MODEL_STORAGE_PATH=/app/db/medcatmlflow/models/
+      - MEDCATMLFLOW_DB_URI=sqlite:///mlflow.db
+      - MEDCATMLFLOW_LOGS_PATH=/app/logs/
+      - MEDCATMLFLOW_LOG_LEVEL=INFO
+      - MEDCATMLFLOW_LOG_BACKUP_DAYS=30
 
 volumes:
   medcattrainer_api-media:
