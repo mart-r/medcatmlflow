@@ -16,11 +16,12 @@ app = Flask(__name__)
 STORAGE_PATH = os.environ.get("MODEL_STORAGE_PATH")
 LOG_PATH = os.environ.get("LOGS_PATH", os.path.join("..", "..", "logs"))
 LOG_BACKUP_DAYS = int(os.environ.get("LOG_BACKUP_DAYS", "30"))
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
 # setup logging
 # Create a root logger
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(LOG_LEVEL)
 
 # Define the log file and log format
 log_file = os.path.join(os.path.dirname(__file__),
