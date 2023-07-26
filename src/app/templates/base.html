@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <!-- Common header or navigation -->
+    <nav>
+        <a href="{{ url_for('landing_page') }}">Home</a>
+        <a href="{{ url_for('browse_files') }}">Browse Files</a>
+        <a href="{{ url_for('upload_file') }}">Upload File</a>
+        <a href="{{ url_for('all_trees') }}">All Trees</a>
+        <!-- <a href="#">Link 1</a> -->
+        <!-- Add more links here as needed -->
+    </nav>
+
+    <!-- Content of the child templates -->
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Common footer or other static elements -->
+    <footer>
+        <!-- Add footer content here -->
+    </footer>
+</body>
+</html>
