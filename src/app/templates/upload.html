@@ -9,6 +9,13 @@
     <input type="file" name="file" id="file"><br>
     <label for="model_name">Model name:</label>
     <input type="text" name="model_name" id="model_name"><br>
+    <label for="experiment">Select an experiment:</label>
+    <select name="experiment" id="experiment" required>
+        <option value="" disabled selected>Select an experiment</option>
+        {% for experiment_name in experiment_names %}
+            <option value="{{ experiment_name }}">{{ experiment_name }}</option>
+        {% endfor %}
+    </select><br>
     <label for="overwrite">Overwrite existing model:</label>
     <input type="checkbox" name="overwrite" id="overwrite" value="1"><br>
     <input type="submit" value="Upload">

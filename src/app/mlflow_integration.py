@@ -8,7 +8,7 @@ from mlflow.entities.model_registry import RegisteredModel
 
 from werkzeug.datastructures import FileStorage  # used in Flask
 
-from .utils import DuplciateUploadException, ModelMetaData
+from .utils import ModelMetaData
 from .utils import build_nodes, get_all_trees
 from .medcat_integration import create_meta
 
@@ -29,7 +29,11 @@ def create_mlflow_experiment(name: str, description: str) -> str:
     return exp
 
 
-def get_all_experiment_names() -> list[tuple[str, str]]:
+def get_all_experiment_names() -> list[str]:
+    return [el[0] for el in get_all_experiments()]
+
+
+def get_all_experiments() -> list[tuple[str, str]]:
     return [(exp.name, exp.tags.get('description',
                                     "Old experiment with no description"))
             for exp in MLFLOW_CLIENT.search_experiments()]
@@ -40,38 +44,24 @@ def delete_experiment(name: str) -> None:
     MLFLOW_CLIENT.delete_experiment(exp.experiment_id)
 
 
-def _create_new_experiment(file_path: str,
-                           model_description: str,
-                           overwrite: bool) -> str:
-    """Validate upload and get experiment ID if valid upload.
-    """
-    if os.path.exists(file_path) and not overwrite:
-        raise DuplciateUploadException("File already exists - tick the "
-                                       "overwrite tick box if you wish "
-                                       "to overwrite")
-
-    exp = MLFLOW_CLIENT.get_experiment_by_name(model_description)
-    if exp and not overwrite:
-        raise DuplciateUploadException("Model by this description exists - "
-                                       "choose another description / name")
-    elif exp:
-        return exp.experiment_id
-    else:
-        return MLFLOW_CLIENT.create_experiment(model_description)
+def _get_experiment_id(experiment_name: str) -> str:
+    return MLFLOW_CLIENT.get_experiment_by_name(experiment_name).experiment_id
 
 
 def attempt_upload(uploaded_file: FileStorage,
+                   experiment_name: str,
                    model_description: str,
                    overwrite: bool, storage_path: str):
+    if not has_experiment(experiment_name):
+        return f'Experiment not found: {experiment_name}'
 
     # Save the uploaded file to the desired location
     file_path = os.path.join(storage_path, uploaded_file.filename)
-    try:
-        experiment_id = _create_new_experiment(file_path,
-                                               model_description,
-                                               overwrite)
-    except DuplciateUploadException as e:
-        return e.msg
+
+    if os.path.exists(file_path) and not overwrite:
+        return f"File already exists: {uploaded_file.filename}"
+
+    experiment_id = _get_experiment_id(experiment_name)
 
     # save
     uploaded_file.save(file_path)
@@ -102,8 +92,7 @@ def attempt_upload(uploaded_file: FileStorage,
             folder_path = file_path[:-4]
             if os.path.exists(folder_path):
                 os.removedirs(folder_path)
-        # delet MLFLOW stuff
-        MLFLOW_CLIENT.delete_experiment(experiment_id)
+        # delete MLFLOW stuff
         MLFLOW_CLIENT.delete_run(run_id)
         return f"Unable to store model {uploaded_file.filename}: {e}"
 

@@ -11,6 +11,7 @@ from .mlflow_integration import delete_mlflow_file, get_info
 from .mlflow_integration import get_history, get_all_trees_with_links
 from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
+from .mlflow_integration import get_all_experiments
 
 from .utils import setup_logging
 
@@ -29,13 +30,17 @@ setup_logging(logger)
 def upload_file():
     if request.method == "POST":
         issues = attempt_upload(request.files['file'],
+                                request.form.get("experiment"),
                                 request.form.get("model_name"),
                                 request.form.get("overwrite") == "1",
                                 STORAGE_PATH)
         if issues:
             return issues
         return "File uploaded successfully!"
-    return render_template("upload.html")
+    else:
+        experiment_names = get_all_experiment_names()
+        return render_template("upload.html",
+                               experiment_names=experiment_names)
 
 
 # Endpoint to browse and download files along with custom information
@@ -113,7 +118,7 @@ def manage_experiments():
         return redirect(url_for('manage_experiments'))
 
     return render_template('manage_experiments.html',
-                           experiments=get_all_experiment_names())
+                           experiments=get_all_experiments())
 
 
 if __name__ == "__main__":
