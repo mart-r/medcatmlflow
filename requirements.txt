@@ -1,4 +1,4 @@
-mlflow<=2.0
+mlflow
 dill~=0.3.4
 medcat~=1.8.0
 spacy>=3.1.0

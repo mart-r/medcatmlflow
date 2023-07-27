@@ -216,7 +216,7 @@ def get_history(file_path: str) -> list:
 
 def get_all_trees_with_links(storage_path: str):
     # Query for registered models
-    models = MLFLOW_CLIENT.list_registered_models()
+    models = MLFLOW_CLIENT.search_registered_models()
 
     # Create a list of tuples containing tree representations and model links
     data = {}
