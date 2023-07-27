@@ -9,12 +9,14 @@
         <tr>
             <th>Short Name</th>
             <th>Description</th>
+            <th>Number of models</th>
             <th>Actions</th>
         </tr>
-        {% for name, description in experiments %}
+        {% for name, description, nr_of_models in experiments %}
         <tr>
             <td>{{ name }}</td>
             <td>{{ description }}</td>
+            <td>{{ nr_of_models }}</td>
             <td>
                 <form method="post" onsubmit="return confirm('Are you sure you want to remove this experiment?');">
                     <input type="hidden" name="short_name_to_remove" value="{{ name }}">

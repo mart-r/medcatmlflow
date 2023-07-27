@@ -5,6 +5,7 @@ import shutil
 import logging
 
 from mlflow import MlflowClient, MlflowException
+from mlflow.entities import Experiment
 from mlflow.entities.model_registry import RegisteredModel
 
 from werkzeug.datastructures import FileStorage  # used in Flask
@@ -30,13 +31,19 @@ def create_mlflow_experiment(name: str, description: str) -> str:
     return exp
 
 
+def _get_exp_run_ids(exp: Experiment) -> list[str]:
+    return [run.info.run_id
+            for run in MLFLOW_CLIENT.search_runs([exp.experiment_id, ])]
+
+
 def get_all_experiment_names() -> list[str]:
     return [el[0] for el in get_all_experiments()]
 
 
 def get_all_experiments() -> list[tuple[str, str]]:
     return [(exp.name, exp.tags.get('description',
-                                    "Old experiment with no description"))
+                                    "Old experiment with no description"),
+             len(_get_exp_run_ids(exp)))
             for exp in MLFLOW_CLIENT.search_experiments()]
 
 
