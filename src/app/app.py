@@ -1,6 +1,7 @@
 # app.py (Backend)
 
 from flask import Flask, render_template, request, send_file, jsonify
+from flask import redirect, url_for
 
 import os
 import logging
@@ -8,6 +9,8 @@ import logging
 from .mlflow_integration import attempt_upload, get_files_with_info
 from .mlflow_integration import delete_mlflow_file, get_info
 from .mlflow_integration import get_history, get_all_trees_with_links
+from .mlflow_integration import has_experiment, create_mlflow_experiment
+from .mlflow_integration import get_all_experiment_names, delete_experiment
 
 from .utils import setup_logging
 
@@ -81,6 +84,36 @@ def all_trees():
     all_trees_with_links = get_all_trees_with_links(STORAGE_PATH)
     return render_template("all_trees.html",
                            all_trees_with_links=all_trees_with_links)
+
+
+@app.route('/create_experiment', methods=['GET', 'POST'])
+def create_experiment():
+    if request.method == 'POST':
+        short_name = request.form['short_name']
+        description = request.form['description']
+
+        if has_experiment(short_name):
+            return f"Experiment already exists: {short_name}"
+        create_mlflow_experiment(short_name, description)
+
+        return redirect(url_for('manage_experiments'))
+
+    return render_template('create_experiment.html')
+
+
+@app.route('/manage_experiments', methods=['GET', 'POST'])
+def manage_experiments():
+    if request.method == 'POST':
+        short_name_to_remove = request.form['short_name_to_remove']
+
+        # Remove the experiment with the given short_name from the list.
+        delete_experiment(short_name_to_remove)
+
+        # Redirect to refresh the page after removing an experiment.
+        return redirect(url_for('manage_experiments'))
+
+    return render_template('manage_experiments.html',
+                           experiments=get_all_experiment_names())
 
 
 if __name__ == "__main__":

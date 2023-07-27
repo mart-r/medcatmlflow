@@ -19,6 +19,27 @@ MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
 logger = logging.getLogger(__name__)
 
 
+def has_experiment(name: str) -> bool:
+    return bool(MLFLOW_CLIENT.get_experiment_by_name(name))
+
+
+def create_mlflow_experiment(name: str, description: str) -> str:
+    exp = MLFLOW_CLIENT.create_experiment(name,
+                                          tags={'description': description})
+    return exp
+
+
+def get_all_experiment_names() -> list[tuple[str, str]]:
+    return [(exp.name, exp.tags.get('description',
+                                    "Old experiment with no description"))
+            for exp in MLFLOW_CLIENT.search_experiments()]
+
+
+def delete_experiment(name: str) -> None:
+    exp = MLFLOW_CLIENT.get_experiment_by_name(name)
+    MLFLOW_CLIENT.delete_experiment(exp.experiment_id)
+
+
 def _create_new_experiment(file_path: str,
                            model_description: str,
                            overwrite: bool) -> str:

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Create Experiment{% endblock %}
+
+{% block content %}
+<h1>Create Experiment</h1>
+<form method="post">
+    <label for="short_name">Short Name:</label>
+    <input type="text" id="short_name" name="short_name" required>
+    <br>
+    <label for="description">Description:</label>
+    <br>
+    <textarea id="description" name="description" rows="5" cols="40" required></textarea>
+    <br>
+    <input type="submit" value="Create">
+</form>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Experiments{% endblock %}
+
+{% block content %}
+<h1>Manage Experiments</h1>
+{% if experiments %}
+    <table border="1">
+        <tr>
+            <th>Short Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+        {% for name, description in experiments %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ description }}</td>
+            <td>
+                <form method="post" onsubmit="return confirm('Are you sure you want to remove this experiment?');">
+                    <input type="hidden" name="short_name_to_remove" value="{{ name }}">
+                    <input type="submit" value="Remove">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No experiments found.</p>
+{% endif %}
+<br>
+<a href="/create_experiment">Create a New Experiment</a>
+{% endblock %}
