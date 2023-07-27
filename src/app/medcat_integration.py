@@ -49,11 +49,11 @@ def _try_update(file_path: str, new_model: Optional[str] = None,
             file_path_no_zip = file_path
         logger.info("Moving the directory %s -> %s", new_model,
                     file_path_no_zip)
-        shutil.copytree(new_model, file_path_no_zip,
-                        dirs_exist_ok=True)
+        shutil.move(new_model, file_path_no_zip,
+                    dirs_exist_ok=True)
         logger.info("Moving the zip %s -> %s", new_model + ".zip",
                     file_path_w_zip)
-        shutil.copy(new_model + ".zip", file_path_w_zip)
+        shutil.move(new_model + ".zip", file_path_w_zip)
     return CAT.load_model_pack(new_model)
 
 
