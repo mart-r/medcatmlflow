@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+import shutil
 
 import logging
 
@@ -75,7 +76,7 @@ def attempt_upload(uploaded_file: FileStorage,
 
     try:
         # db stuff
-        meta = create_meta(file_path, model_filename)
+        meta = create_meta(file_path, model_filename, category=experiment_name)
         MLFLOW_CLIENT.create_registered_model(model_filename,
                                               tags=meta.as_dict(),
                                               description=model_description)
@@ -84,14 +85,14 @@ def attempt_upload(uploaded_file: FileStorage,
         # Create a model version associated with the registered model and file
         MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
     except Exception as e:
-        logger.error("Unable to store model %", uploaded_file.filename,
+        logger.error("Unable to store model %s", uploaded_file.filename,
                      exc_info=e)
         # do cleanup on disk
         os.remove(file_path)
-        if file_path.endswith('zip'):
+        if file_path.endswith('.zip'):
             folder_path = file_path[:-4]
             if os.path.exists(folder_path):
-                os.removedirs(folder_path)
+                shutil.rmtree(folder_path)
         # delete MLFLOW stuff
         MLFLOW_CLIENT.delete_run(run_id)
         return f"Unable to store model {uploaded_file.filename}: {e}"
@@ -108,6 +109,7 @@ def get_files_with_info() -> list[dict]:
             "name": model.name,
             "version": model.tags['version'],
             "description": model.description,
+            "experiment": model.tags['category']
         }
         files_with_info.append(cur_info)
     return files_with_info
@@ -197,7 +199,9 @@ def get_meta_model(model: RegisteredModel, storage_path: str) -> ModelMetaData:
     except KeyError:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk")
         file_path = os.path.join(storage_path, model.tags['model_file_name'])
-        meta = create_meta(file_path, model.name)
+        meta = create_meta(file_path, model.name,
+                           # if no category saved, we can't re-create
+                           category=model.tags['category'])
         _update_model_meta(model, meta)
     return meta
 

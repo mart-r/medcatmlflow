@@ -145,6 +145,7 @@ class DuplciateUploadException(ValueError):
 
 @dataclass
 class ModelMetaData:
+    category: str
     version: str
     version_history: list[str]
     model_file_name: str
@@ -155,6 +156,7 @@ class ModelMetaData:
 
     def as_dict(self) -> dict:
         return {
+            "category": self.category,
             "version": self.version,
             "version_history": self.version_history,
             "model_file_name": self.model_file_name,

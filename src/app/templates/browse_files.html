@@ -30,6 +30,7 @@
             <div class="file-info">
                 <a href="{{ url_for('show_file_info', filename=file.name) }}">{{ file.name }}</a><br>
                 - Description: "<span class="file-description">{{ file.description }}</span>" Version: {{ file.version }}
+                Category: {{ file.experiment }}
                 <a href="{{ url_for('show_file_history', filename=file.name) }}">History</a>
                 <div class="action-buttons">
                     <form action="{{ url_for('delete_file') }}" method="post" onsubmit="return confirm('Are you sure you want to delete this file?')">
