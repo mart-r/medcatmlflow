@@ -15,9 +15,9 @@ from .mlflow_integration import get_all_experiments
 
 from .utils import setup_logging
 
-app = Flask(__name__)
+from .envs import STORAGE_PATH
 
-STORAGE_PATH = os.environ.get("MEDCATMLFLOW_MODEL_STORAGE_PATH")
+app = Flask(__name__)
 
 # setup logging
 # Create a root logger
@@ -34,8 +34,7 @@ def upload_file():
                                 file.save,
                                 request.form.get("experiment"),
                                 request.form.get("model_name"),
-                                request.form.get("overwrite") == "1",
-                                STORAGE_PATH)
+                                request.form.get("overwrite") == "1")
         if issues:
             return issues
         return "File uploaded successfully!"
@@ -58,7 +57,7 @@ def delete_file():
     if not filename:
         return jsonify({"error": "Filename not provided"}), 400
 
-    delete_mlflow_file(filename, STORAGE_PATH)
+    delete_mlflow_file(filename)
     return jsonify({"message": "File deleted successfully"}), 200
 
 
@@ -88,7 +87,7 @@ def landing_page():
 
 @app.route("/all_trees")
 def all_trees():
-    all_trees_with_links = get_all_trees_with_links(STORAGE_PATH)
+    all_trees_with_links = get_all_trees_with_links()
     return render_template("all_trees.html",
                            all_trees_with_links=all_trees_with_links)
 

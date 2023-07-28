@@ -13,8 +13,11 @@ from .utils import ModelMetaData
 from .utils import build_nodes, get_all_trees
 from .medcat_integration import create_meta
 
+from .envs import STORAGE_PATH
+
 # Configure MLflow
-DB_URI = os.environ.get("MEDCATMLFLOW_DB_URI")
+from .envs import DB_URI
+
 MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
 
 logger = logging.getLogger(__name__)
@@ -58,12 +61,12 @@ def _get_experiment_id(experiment_name: str) -> str:
 def attempt_upload(file_name: str, file_saver: Callable[[str], None],
                    experiment_name: str,
                    model_description: str,
-                   overwrite: bool, storage_path: str):
+                   overwrite: bool):
     if not has_experiment(experiment_name):
         return f'Experiment not found: {experiment_name}'
 
     # Save the uploaded file to the desired location
-    file_path = os.path.join(storage_path, file_name)
+    file_path = os.path.join(STORAGE_PATH, file_name)
 
     if os.path.exists(file_path) and not overwrite:
         return f"File already exists: {file_name}"
@@ -137,9 +140,9 @@ def get_files_with_info() -> list[dict]:
     return files_with_info
 
 
-def delete_mlflow_file(filename: str, storage_path: str) -> None:
+def delete_mlflow_file(filename: str) -> None:
 
-    file_path = os.path.join(storage_path, filename)
+    file_path = os.path.join(STORAGE_PATH, filename)
 
     # Remove the file from the filesystem
     if os.path.exists(file_path):
@@ -216,12 +219,12 @@ def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
     model.tags.update(meta.as_dict())
 
 
-def get_meta_model(model: RegisteredModel, storage_path: str) -> ModelMetaData:
+def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     try:
         meta = ModelMetaData.from_mlflow_model(model)
     except KeyError:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk")
-        file_path = os.path.join(storage_path, model.tags['model_file_name'])
+        file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
         meta = create_meta(file_path, model.name,
                            # if no category saved, we can't re-create
                            category=model.tags['category'])
@@ -233,7 +236,7 @@ def get_history(file_path: str) -> list:
     basename = os.path.basename(file_path)
     model = MLFLOW_CLIENT.get_registered_model(basename)
     if model:
-        meta = get_meta_model(model, os.path.dirname(file_path))
+        meta = get_meta_model(model)
         cur_info = meta.as_dict()
         versions = cur_info["version_history"].split(",")
         history = []
@@ -251,14 +254,14 @@ def get_history(file_path: str) -> list:
                 ("SAVED META", str(model))]
 
 
-def get_all_trees_with_links(storage_path: str):
+def get_all_trees_with_links():
     # Query for registered models
     models = MLFLOW_CLIENT.search_registered_models()
 
     # Create a list of tuples containing tree representations and model links
     data = {}
     for model in models:
-        saved_meta = get_meta_model(model, storage_path)
+        saved_meta = get_meta_model(model)
         if saved_meta:
             version = saved_meta.version
             # remove empty versions

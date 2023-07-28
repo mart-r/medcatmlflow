@@ -9,10 +9,9 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 
-LOG_PATH = os.environ.get("MEDCATMLFLOW_LOGS_PATH",
-                          os.path.join("..", "..", "logs"))
-LOG_BACKUP_DAYS = int(os.environ.get("MEDCATMLFLOW_LOG_BACKUP_DAYS", "30"))
-LOG_LEVEL = os.environ.get("MEDCATMLFLOW_LOG_LEVEL", "INFO")
+from .envs import LOG_PATH
+from .envs import LOG_BACKUP_DAYS
+from .envs import LOG_LEVEL
 
 
 def _set_parent(node_dict: dict[str, Node],
