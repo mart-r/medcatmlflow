@@ -182,6 +182,12 @@ def get_info(file_path: str) -> dict:
     return cur_info
 
 
+def recalc_model_metedata(file_path: str) -> None:
+    basename = os.path.basename(file_path)
+    model = MLFLOW_CLIENT.get_registered_model(basename)
+    _recalc_model_metadata(model)
+
+
 def _get_file_name(version: str, _tag_key: str = 'version') -> str:
     all_models = MLFLOW_CLIENT.search_registered_models()
     model: Optional[RegisteredModel] = None
@@ -219,16 +225,20 @@ def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
     model.tags.update(meta.as_dict())
 
 
+def _recalc_model_metadata(model: RegisteredModel) -> None:
+    file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
+    meta = create_meta(file_path, model.name,
+                       # if no category saved, we can't re-create
+                       category=model.tags['category'])
+    _update_model_meta(model, meta)
+
+
 def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     try:
         meta = ModelMetaData.from_mlflow_model(model)
     except KeyError:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk")
-        file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
-        meta = create_meta(file_path, model.name,
-                           # if no category saved, we can't re-create
-                           category=model.tags['category'])
-        _update_model_meta(model, meta)
+        _recalc_model_metadata(model)
     return meta
 
 

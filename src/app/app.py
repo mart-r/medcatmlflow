@@ -11,7 +11,7 @@ from .mlflow_integration import delete_mlflow_file, get_info
 from .mlflow_integration import get_history, get_all_trees_with_links
 from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
-from .mlflow_integration import get_all_experiments
+from .mlflow_integration import get_all_experiments, recalc_model_metedata
 
 from .utils import setup_logging
 
@@ -66,6 +66,15 @@ def delete_file():
 def show_file_info(filename):
     file_path = os.path.join(STORAGE_PATH, filename)
     return render_template("file_info.html", info=get_info(file_path))
+
+
+# Endpoint for recalculation of metadata
+@app.route("/recalculate_metadata/<filename>")
+def recalculate_metadata(filename):
+    file_path = os.path.join(STORAGE_PATH, filename)
+    recalc_model_metedata(file_path)
+    # Redirect to the file information page with the updated metadata
+    return redirect(url_for("show_file_info", filename=filename))
 
 
 # Endpoint for history of a specific file

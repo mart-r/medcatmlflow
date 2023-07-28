@@ -88,15 +88,22 @@ def _remove_half(d: dict[str, Any], smallest: bool = True) -> None:
 def _attempt_fix_big(*dicts: list[dict[str, Any]],
                      limit: int = 5000) -> tuple[list[dict[str, Any]],
                                                  list[bool]]:
+    dicts = list(dicts)
     changes = [False for _ in dicts]
     for i, d in enumerate(dicts):
+        if not isinstance(d, dict):
+            logger.info("Found a dict that needs unwrapped (%s)", d)
+            # in case of Delegating dicts, for instance
+            # simply unwrap
+            d = dict(**d)
+            dicts[i] = d
         s = str(d)
         while len(s) > limit:
             logger.info("Truncating dict from length %d to half size", len(s))
             _remove_half(d)
             s = str(d)
             changes[i] = True
-    return dicts, changes
+    return tuple(dicts), changes
 
 
 def create_meta(file_path: str, model_name: str,
