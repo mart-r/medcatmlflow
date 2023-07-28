@@ -167,7 +167,7 @@ def get_info(file_path: str) -> dict:
     basename = os.path.basename(file_path)
     model = MLFLOW_CLIENT.get_registered_model(basename)
     if model:
-        metadata = get_meta_model(model, os.path.dirname(file_path))
+        metadata = get_meta_model(model)
         cur_info = metadata.as_dict()
         if ('performance' in cur_info
                 and not isinstance(cur_info['performance'], dict)):
