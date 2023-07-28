@@ -1,6 +1,7 @@
 import os
 from typing import Optional, Callable
 import shutil
+import re
 
 import logging
 
@@ -103,6 +104,20 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
         return f"Unable to store model {file_name}: {e}"
 
 
+RUN_ID_PATTERN = re.compile(re.escape("runs:/") +
+                            "(.*?)" +
+                            re.escape("/") + ".*")
+
+
+def _get_run_id(model: RegisteredModel,
+                run_id_pattern: re.Pattern = RUN_ID_PATTERN
+                ) -> str:
+    ver = MLFLOW_CLIENT.search_model_versions(f"name='{model.name}'")[0]
+    source = ver.source
+    # e.g: runs:/5a5dad1636bf4d87bba373e10dcd99e8//app/models/smth.zip
+    return run_id_pattern.match(source).group(1)
+
+
 def get_files_with_info() -> list[dict]:
     # Query for registered models
     models = MLFLOW_CLIENT.search_registered_models()
@@ -110,11 +125,13 @@ def get_files_with_info() -> list[dict]:
     # Print the list of models and their information
     files_with_info = []
     for model in models:
+        run_id = _get_run_id(model)
         cur_info = {
             "name": model.name,
             "version": model.tags['version'],
             "description": model.description,
-            "experiment": model.tags['category']
+            "experiment": model.tags['category'],
+            "run_id": run_id,
         }
         files_with_info.append(cur_info)
     return files_with_info
