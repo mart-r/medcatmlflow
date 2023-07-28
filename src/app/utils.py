@@ -31,16 +31,19 @@ def _set_parent(node_dict: dict[str, Node],
         child.parent = parent
 
 
-def build_nodes(data: dict[str, list[str]]) -> dict[str, Node]:
+def build_nodes(data: dict[str, tuple[list[str], str]]) -> dict[str, Node]:
     """Build nodes and relationships from a raw dictionary.
 
     The dictionary is assumed to be in the following format:
      - its keys are the children
-     - its values are the parents in chronological order
-        (this means that the closest parent is at the end of the list)
+     - its values contains of:
+        - List of parents in chronological order
+           (this means that the closest parent is at the end of the list)
+        - The category name
 
     Args:
-        data (dict[str, list[str]]): The input child-parents dict.
+        data (dict[str, tuple[list[str], str]]): The input.
+            This maps a version to its parents and the category.
 
     Returns:
         dict[str, Node]: The built nodes with relationships.
@@ -50,23 +53,24 @@ def build_nodes(data: dict[str, list[str]]) -> dict[str, Node]:
 
     # add all children
     for child in data:
-        node_dict[child] = Node(child)
+        node_dict[child] = Node(child, category=data[child][1])
 
     # add all parents
-    all_parents = (parent for parents in data.values() for parent in parents)
-    for parent in all_parents:
+    all_parents = ((parent, category) for (parents, category) in data.values()
+                   for parent in parents)
+    for (parent, category) in all_parents:
         if parent in node_dict:
             continue
-        node_dict[parent] = Node(parent)
+        node_dict[parent] = Node(parent, category=category)
 
     # add all direct relationships
     # to closest parent
-    for child, parents in data.items():
+    for child, (parents, _) in data.items():
         if parents:
             _set_parent(node_dict, parents[-1], child)
 
     # add relationships
-    for child_name, parent_names in data.items():
+    for child_name, (parent_names, _) in data.items():
         child = node_dict[child_name]
         for parent2, parent1 in zip(parent_names[:-1], parent_names[1:]):
             # parent2 is the parent of parent1
@@ -109,7 +113,8 @@ def get_tree(root_node: Node) -> str:
 
 
 def get_all_trees(nodes: Iterator[Node],
-                  model_link_func: Callable[[str], str]) -> list[str]:
+                  model_link_func: Callable[[str], str]
+                  ) -> list[tuple[str, str]]:
     """Get all tree representations with links to corresponding models.
 
     Args:
@@ -118,9 +123,10 @@ def get_all_trees(nodes: Iterator[Node],
             Function to generate the link from model version.
 
     Returns:
-        list[str]: All trees with links to corresponding models.
+        list[tuple[str, str]]: All trees with links to corresponding models
+            alongside their respective categories.
     """
-    trees = []
+    trees: list[tuple[str, str]] = []
     for root in find_roots(nodes):
         tree_repr = ""
         for pre, _, node in RenderTree(root):
@@ -131,7 +137,7 @@ def get_all_trees(nodes: Iterator[Node],
             else:
                 full_link = f"<a href='{model_link}'>{model_link}</a>"
             tree_repr += f"{pre}{node.name} (Model link: {full_link})\n"
-        trees.append(tree_repr)
+        trees.append((tree_repr, root.category))
     return trees
 
 

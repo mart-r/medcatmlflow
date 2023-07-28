@@ -4,8 +4,8 @@
 
 {% block content %}
 <h1>All Trees</h1>
-{% for tree in all_trees_with_links %}
-    <h2>Tree</h2>
+{% for tree, category in all_trees_with_links %}
+    <h2>{{ category }}</h2>
     <pre>{{ tree | safe }}</pre>  <!-- Use the 'safe' filter to render the HTML links -->
 {% endfor %}
 {% endblock %}

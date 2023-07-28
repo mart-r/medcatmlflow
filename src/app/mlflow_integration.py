@@ -254,12 +254,11 @@ def get_history(file_path: str) -> list:
                 ("SAVED META", str(model))]
 
 
-def get_all_trees_with_links():
+def get_all_trees_with_links() -> list[tuple[str, str]]:
     # Query for registered models
     models = MLFLOW_CLIENT.search_registered_models()
 
-    # Create a list of tuples containing tree representations and model links
-    data = {}
+    data: dict[str, tuple[list[str], str]] = {}
     for model in models:
         saved_meta = get_meta_model(model)
         if saved_meta:
@@ -267,7 +266,7 @@ def get_all_trees_with_links():
             # remove empty versions
             versions = [ver for ver in saved_meta.version_history.split(",")
                         if ver]
-            data[version] = versions
+            data[version] = (versions, model.tags['category'])
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter
     return get_all_trees(nodes, _get_hist_link)
