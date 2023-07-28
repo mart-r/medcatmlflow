@@ -86,7 +86,8 @@ def show_file_history(filename):
 
 @app.route("/download/<filename>")
 def download_file(filename):
-    return send_file(filename, as_attachment=True)
+    full_path = os.path.join(STORAGE_PATH, filename)
+    return send_file(full_path, as_attachment=True)
 
 
 @app.route("/")

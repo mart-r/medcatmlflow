@@ -5,7 +5,7 @@
 {% block content %}
 <h1>File Information</h1>
 
-<a href="{{ url_for('show_file_info', filename=info['model_file_name']) }}" download>
+<a href="{{ url_for('download_file', filename=info['model_file_name']) }}" download>
     <button>Download File</button>
 </a>
 <a href="{{ url_for('recalculate_metadata', filename=info['model_file_name']) }}">
