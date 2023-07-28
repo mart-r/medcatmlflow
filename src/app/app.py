@@ -29,7 +29,9 @@ setup_logging(logger)
 @app.route("/upload", methods=["GET", "POST"])
 def upload_file():
     if request.method == "POST":
-        issues = attempt_upload(request.files['file'],
+        file = request.files['file']
+        issues = attempt_upload(file.filename,
+                                file.save,
                                 request.form.get("experiment"),
                                 request.form.get("model_name"),
                                 request.form.get("overwrite") == "1",

@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Callable
 import shutil
 
 import logging
@@ -7,8 +7,6 @@ import logging
 from mlflow import MlflowClient, MlflowException
 from mlflow.entities import Experiment
 from mlflow.entities.model_registry import RegisteredModel
-
-from werkzeug.datastructures import FileStorage  # used in Flask
 
 from .utils import ModelMetaData
 from .utils import build_nodes, get_all_trees
@@ -56,7 +54,7 @@ def _get_experiment_id(experiment_name: str) -> str:
     return MLFLOW_CLIENT.get_experiment_by_name(experiment_name).experiment_id
 
 
-def attempt_upload(uploaded_file: FileStorage,
+def attempt_upload(file_name: str, file_saver: Callable[[str], None],
                    experiment_name: str,
                    model_description: str,
                    overwrite: bool, storage_path: str):
@@ -64,22 +62,22 @@ def attempt_upload(uploaded_file: FileStorage,
         return f'Experiment not found: {experiment_name}'
 
     # Save the uploaded file to the desired location
-    file_path = os.path.join(storage_path, uploaded_file.filename)
+    file_path = os.path.join(storage_path, file_name)
 
     if os.path.exists(file_path) and not overwrite:
-        return f"File already exists: {uploaded_file.filename}"
+        return f"File already exists: {file_name}"
 
     experiment_id = _get_experiment_id(experiment_name)
 
     # save
-    uploaded_file.save(file_path)
+    file_saver(file_path)
 
     run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
     run_id = run.info.run_id
     MLFLOW_CLIENT.log_artifact(run_id, file_path)
     MLFLOW_CLIENT.log_param(run_id, "model_description", model_description)
 
-    model_filename = uploaded_file.filename
+    model_filename = file_name
 
     try:
         # db stuff
@@ -92,7 +90,7 @@ def attempt_upload(uploaded_file: FileStorage,
         # Create a model version associated with the registered model and file
         MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
     except Exception as e:
-        logger.error("Unable to store model %s", uploaded_file.filename,
+        logger.error("Unable to store model %s", file_name,
                      exc_info=e)
         # do cleanup on disk
         os.remove(file_path)
@@ -102,7 +100,7 @@ def attempt_upload(uploaded_file: FileStorage,
                 shutil.rmtree(folder_path)
         # delete MLFLOW stuff
         MLFLOW_CLIENT.delete_run(run_id)
-        return f"Unable to store model {uploaded_file.filename}: {e}"
+        return f"Unable to store model {file_name}: {e}"
 
 
 def get_files_with_info() -> list[dict]:
