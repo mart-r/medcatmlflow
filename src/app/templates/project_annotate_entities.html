@@ -1,41 +1,28 @@
 <!-- project_annotate_entities.html -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Annotate Entities</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Project Annotate Entities{% endblock %}
+
+{% block content %}
     <h1>Project Annotate Entities</h1>
     <table>
         <tr>
-            <th>Project ID</th>
-            <th>Name</th>
-            <th>Concept Database</th>
-            <th>Require Entity Validation</th>
-            <th>Train Model on Submit</th>
-            <th>Add New Entities</th>
-            <th>Restrict Concept Lookup</th>
-            <th>Terminate Available</th>
-            <th>Irrelevant Available</th>
-            <th>Enable Entity Annotation Comments</th>
+            {% if data %}
+                {% set keys = data[0].keys() %}
+                {% for key in keys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            {% else %}
+                <th>No data</th>
+            {% endif %}
         </tr>
         {% for project in data %}
             <tr>
-                <td>{{ project.id }}</td>
-                <td>{{ project.name }}</td>
-                <td>{{ project.concept_db.name }}</td>
-                <td>{{ project.require_entity_validation }}</td>
-                <td>{{ project.train_model_on_submit }}</td>
-                <td>{{ project.add_new_entities }}</td>
-                <td>{{ project.restrict_concept_lookup }}</td>
-                <td>{{ project.terminate_available }}</td>
-                <td>{{ project.irrelevant_available }}</td>
-                <td>{{ project.enable_entity_annotation_comments }}</td>
+                {% for key in keys %}
+                    <td>{{ project[key] }}</td>
+                {% endfor %}
             </tr>
         {% endfor %}
     </table>
-</body>
-</html>
+{% endblock %}
