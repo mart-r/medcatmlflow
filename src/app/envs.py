@@ -8,3 +8,7 @@ LOG_PATH = os.environ.get("MEDCATMLFLOW_LOGS_PATH",
                           os.path.join("..", "..", "logs"))
 LOG_BACKUP_DAYS = int(os.environ.get("MEDCATMLFLOW_LOG_BACKUP_DAYS", "30"))
 LOG_LEVEL = os.environ.get("MEDCATMLFLOW_LOG_LEVEL", "INFO")
+
+# linking to MedCATtrainer
+MCT_USERNAME = os.environ.get("MCT_USERNAME")
+MCT_PASSWORD = os.environ.get("MCT_PASSWORD")

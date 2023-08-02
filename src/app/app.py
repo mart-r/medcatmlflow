@@ -3,6 +3,9 @@
 from flask import Flask, render_template, request, send_file, jsonify
 from flask import redirect, url_for
 
+import requests
+import json
+
 import os
 import logging
 
@@ -15,7 +18,10 @@ from .mlflow_integration import get_all_experiments, recalc_model_metedata
 
 from .utils import setup_logging
 
-from .envs import STORAGE_PATH
+from .envs import STORAGE_PATH, MCT_USERNAME, MCT_PASSWORD
+
+# In docker, this is what we should have
+MCT_BASE_URL = "http://medcattrainer-medcattrainer-1:8000/api/"
 
 app = Flask(__name__)
 
@@ -130,6 +136,36 @@ def manage_experiments():
 
     return render_template('manage_experiments.html',
                            experiments=get_all_experiments())
+
+
+# Endpoint for making a GET request to a Django API endpoint
+@app.route("/annotated_projects")
+def annotated_projects():
+
+    payload = {"username": MCT_USERNAME, "password": MCT_PASSWORD}
+    url = f"{MCT_BASE_URL}api-token-auth/"
+    resp = requests.post(url, json=payload)
+    if resp.status_code != 200:
+        return f"FAILED: {resp.status_code}"
+
+    headers = {
+        'Authorization': f'Token {json.loads(resp.text)["token"]}',
+    }
+
+    endpoint = "project-annotate-entities/"
+    django_api_url = f"{MCT_BASE_URL}{endpoint}"
+
+    try:
+        response = requests.get(django_api_url, headers=headers)
+        response_data = response.json()
+
+        data = response_data['results']
+
+        return render_template("project_annotate_entities.html",
+                               data=data)
+
+    except requests.RequestException as e:
+        return f"Error accessing Django API: {e}", 500
 
 
 if __name__ == "__main__":

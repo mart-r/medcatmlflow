@@ -1,6 +1,6 @@
-version: '1'
+version: '3'
 services:
-  mlflow-ui:
+  medcatmlflow:
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,6 +15,14 @@ services:
       - MEDCATMLFLOW_LOGS_PATH=/app/logs/
       - MEDCATMLFLOW_LOG_LEVEL=INFO
       - MEDCATMLFLOW_LOG_BACKUP_DAYS=30
+    env_file:  # define user-specified information (e.g credentials)
+      - .env
+    networks:
+      - medcattrainer_default
+
+networks:
+  medcattrainer_default:
+    external: true
 
 volumes:
   medcattrainer_api-media:
