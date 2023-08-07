@@ -18,10 +18,9 @@ from .mlflow_integration import get_all_experiments, recalc_model_metedata
 
 from .utils import setup_logging
 
-from .envs import STORAGE_PATH, MCT_USERNAME, MCT_PASSWORD
+from .envs import STORAGE_PATH, MCT_USERNAME, MCT_PASSWORD, MCT_BASE_URL
 
 # In docker, this is what we should have
-MCT_BASE_URL = "http://10.211.114.213:8001/api/"
 
 app = Flask(__name__)
 
