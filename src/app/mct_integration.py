@@ -1,11 +1,13 @@
 import json
-
 import requests
+import logging
 
 from functools import cache
 
 
 from .envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
+
+logger = logging.getLogger(__name__)
 
 
 @cache
@@ -15,12 +17,16 @@ def _get_auth_token(username: str = MCT_USERNAME,
     url = f"{MCT_BASE_URL}api-token-auth/"
     resp = requests.post(url, json=payload)
     if resp.status_code != 200:
-        return f"FAILED: {resp.status_code}"
+        raise ValueError(f"FAILED auth: {resp.status_code}")
     return json.loads(resp.text)["token"]
 
 
 def get_mct_data() -> dict:
-    token = _get_auth_token()
+    try:
+        token = _get_auth_token()
+    except ValueError as e:
+        logger.warn("Issue while loading MCT data:", exc_info=e)
+        return {}
     headers = {
         "Authorization": f"Token {token}",
     }
