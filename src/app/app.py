@@ -21,7 +21,7 @@ from .utils import setup_logging
 from .envs import STORAGE_PATH, MCT_USERNAME, MCT_PASSWORD
 
 # In docker, this is what we should have
-MCT_BASE_URL = "http://medcattrainer-medcattrainer-1:8000/api/"
+MCT_BASE_URL = "http://10.211.114.213:8001/api/"
 
 app = Flask(__name__)
 

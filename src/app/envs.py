@@ -12,3 +12,5 @@ LOG_LEVEL = os.environ.get("MEDCATMLFLOW_LOG_LEVEL", "INFO")
 # linking to MedCATtrainer
 MCT_USERNAME = os.environ.get("MCT_USERNAME")
 MCT_PASSWORD = os.environ.get("MCT_PASSWORD")
+
+MCT_BASE_URL = os.environ.get("MCT_BASE_URL")

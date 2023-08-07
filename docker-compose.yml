@@ -15,6 +15,7 @@ services:
       - MEDCATMLFLOW_LOGS_PATH=/app/logs/
       - MEDCATMLFLOW_LOG_LEVEL=INFO
       - MEDCATMLFLOW_LOG_BACKUP_DAYS=30
+      - MCT_BASE_ULR=http://10.211.114.213:8001/api/
     env_file:  # define user-specified information (e.g credentials)
       - .env
     networks:
