@@ -21,20 +21,29 @@ def _get_auth_token(username: str = MCT_USERNAME,
     return json.loads(resp.text)["token"]
 
 
-def get_mct_data() -> dict:
+def _get_from_endpoint(endpoint: str) -> list[dict]:
     try:
         token = _get_auth_token()
     except ValueError as e:
-        logger.warn("Issue while loading MCT data:", exc_info=e)
+        logger.warn("Issue while loading from endpoints %s data:",
+                    endpoint, exc_info=e)
         return {}
     headers = {
         "Authorization": f"Token {token}",
     }
 
-    endpoint = "project-annotate-entities/"
+    logger.debug("Querying MCT endpoint: %s", endpoint)
+
     django_api_url = f"{MCT_BASE_URL}{endpoint}"
 
     response = requests.get(django_api_url, headers=headers)
-    response_data = response.json()
 
-    return response_data["results"]
+    j_dict = response.json()
+    return j_dict['results']
+
+
+def get_mct_project_data() -> list[dict]:
+    response_data = _get_from_endpoint("project-annotate-entities/")
+
+    output = response_data
+    return output

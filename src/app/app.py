@@ -3,8 +3,6 @@
 from flask import Flask, render_template, request, send_file, jsonify
 from flask import redirect, url_for
 
-import requests
-
 import os
 import logging
 
@@ -15,7 +13,7 @@ from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
 from .mlflow_integration import get_all_experiments, recalc_model_metedata
 
-from .mct_integration import get_mct_data
+from .mct_integration import get_mct_project_data
 
 from .utils import setup_logging
 
@@ -141,14 +139,10 @@ def manage_experiments():
 # Endpoint for making a GET request to a Django API endpoint
 @app.route("/annotated_projects")
 def annotated_projects():
-    try:
-        data = get_mct_data()
+    data = get_mct_project_data()
 
-        return render_template("project_annotate_entities.html",
-                               data=data)
-
-    except requests.RequestException as e:
-        return f"Error accessing Django API: {e}", 500
+    return render_template("project_annotate_entities.html",
+                           data=data)
 
 
 if __name__ == "__main__":
