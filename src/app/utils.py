@@ -2,6 +2,8 @@ from dataclasses import dataclass, fields
 from typing import Iterator, Callable
 import os
 import sys
+from functools import wraps
+import time
 
 from anytree import Node, RenderTree
 
@@ -201,3 +203,42 @@ def setup_logging(logger: logging.Logger) -> None:
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(log_format)
     logger.addHandler(stream_handler)
+
+
+class ExpiringCache:
+
+    def __init__(self, expiration_seconds):
+        self.cache = {}
+        self.expiration_seconds = expiration_seconds
+
+    def get(self, key):
+        value, timestamp = self.cache.get(key, (None, None))
+        if timestamp is None:
+            return None
+        if time.time() - timestamp > self.expiration_seconds:
+            return None
+        return value
+
+    def set(self, key, value):
+        self.cache[key] = (value, time.time())
+
+    def invalidate(self, key):
+        if key in self.cache:
+            del self.cache[key]
+
+
+def expire_cache_after(seconds):
+    def decorator(func):
+        cache = ExpiringCache(seconds)
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            cached_value = cache.get(args)
+            if cached_value is not None:
+                return cached_value
+            result = func(*args, **kwargs)
+            cache.set(args, result)
+            return result
+
+        return wrapper
+    return decorator

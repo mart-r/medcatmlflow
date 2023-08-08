@@ -2,17 +2,16 @@ import json
 import requests
 import logging
 
-from functools import cache
-
-
+from .utils import expire_cache_after
 from .envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
 
 logger = logging.getLogger(__name__)
 
 
-@cache
+@expire_cache_after(10 * 60)  # expire every 10 minutes
 def _get_auth_token(username: str = MCT_USERNAME,
                     password: str = MCT_PASSWORD) -> str:
+    logger.info("Getting new authentication token")
     payload = {"username": username, "password": password}
     url = f"{MCT_BASE_URL}api-token-auth/"
     resp = requests.post(url, json=payload)
@@ -42,7 +41,7 @@ def _get_from_endpoint(endpoint: str) -> list[dict]:
     return j_dict["results"]
 
 
-@cache  # TODO - limit caching? shouldn't be an issue with small deployments
+@expire_cache_after(60)  # expire every minute
 def _get_cdb(cdb_id) -> str:
     cdbs = _get_from_endpoint("concept-dbs/")
     # e.g:
@@ -61,7 +60,7 @@ def _get_cdb(cdb_id) -> str:
     return "Unknown"
 
 
-@cache  # TODO - limit caching? shouldn't be an issue with small deployments
+@expire_cache_after(60)  # expire every minute
 def _get_dataset(dataset_id) -> str:
     datasets = _get_from_endpoint("datasets/")
     # e.g:
