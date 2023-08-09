@@ -9,6 +9,7 @@ import logging
 from .utils import ModelMetaData
 
 from medcat.cat import CAT
+from medcat.cdb import CDB
 from medcat.utils.versioning import ConfigUpgrader
 
 from pydantic import ValidationError
@@ -129,3 +130,8 @@ def create_meta(file_path: str, model_name: str,
                          cui2average_confidence=cui2average_confidence,
                          cui2count_train=cui2count_train,
                          changed_parts=changed_parts)
+
+
+def get_cdb_hash(cdb_file: str) -> str:
+    cdb = CDB.load(cdb_file)
+    return cdb.get_hash()
