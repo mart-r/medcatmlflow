@@ -129,7 +129,8 @@ def create_meta(file_path: str, model_name: str,
                          performance=performance,
                          cui2average_confidence=cui2average_confidence,
                          cui2count_train=cui2count_train,
-                         changed_parts=changed_parts)
+                         changed_parts=changed_parts,
+                         cdb_hash=cat.cdb.get_hash())
 
 
 def get_cdb_hash(cdb_file: str) -> str:

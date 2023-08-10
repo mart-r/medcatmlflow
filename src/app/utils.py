@@ -1,5 +1,5 @@
-from dataclasses import dataclass, fields
-from typing import Iterator, Callable
+from dataclasses import dataclass, fields, field
+from typing import Iterator, Callable, Optional
 import os
 import sys
 from functools import wraps
@@ -160,6 +160,8 @@ class ModelMetaData:
     cui2average_confidence: dict
     cui2count_train: dict
     changed_parts: list[str]
+    cdb_hash: str
+    mct_cdb_id: Optional[str] = field(default=None)
 
     def as_dict(self) -> dict:
         return {
@@ -171,6 +173,8 @@ class ModelMetaData:
             "cui2average_confidence": self.cui2average_confidence,
             "cui2count_train": self.cui2count_train,
             "changed_parts": self.changed_parts,
+            "cdb_hash": self.cdb_hash,
+            "mct_cdb_id": self.mct_cdb_id,
         }
 
     @classmethod

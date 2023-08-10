@@ -239,6 +239,7 @@ def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     except KeyError:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk")
         _recalc_model_metadata(model)
+        meta = ModelMetaData.from_mlflow_model(model)
     return meta
 
 
@@ -280,3 +281,24 @@ def get_all_trees_with_links() -> list[tuple[str, str]]:
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter
     return get_all_trees(nodes, _get_hist_link)
+
+
+def register_mct_cdbs(mct_id: str, desc: str, hash: str) -> bool:
+    logger.info("Attempting to register CDB '%s' with MCT ID '%s' "
+                "and hash '%s'", desc, mct_id, hash)
+    models = MLFLOW_CLIENT.search_registered_models()
+
+    for model in models:
+        prev_mct_cdb_id = model.tags["mct_cdb_id"]
+        cdb_hash = model.tags["cdb_hash"]
+        if cdb_hash != hash:
+            continue
+        if prev_mct_cdb_id is not None:
+            continue
+        # same hash, not CDB ID set
+        logger.info("Setting MCD CDB ID for Model '%s' to '%s' "
+                    "(hash: %s, CDB description: %s)",
+                    model.name, mct_id, hash, desc)
+        meta = ModelMetaData.from_mlflow_model(model)
+        meta.mct_cdb_id = mct_id
+        _update_model_meta(model, meta)
