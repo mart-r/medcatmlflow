@@ -293,7 +293,7 @@ def register_mct_cdbs(mct_id: str, desc: str, hash: str) -> bool:
         cdb_hash = model.tags["cdb_hash"]
         if cdb_hash != hash:
             continue
-        if prev_mct_cdb_id is not None:
+        if not prev_mct_cdb_id:
             continue
         # same hash, not CDB ID set
         logger.info("Setting MCD CDB ID for Model '%s' to '%s' "
