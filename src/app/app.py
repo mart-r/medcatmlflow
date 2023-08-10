@@ -13,8 +13,6 @@ from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
 from .mlflow_integration import get_all_experiments, recalc_model_metedata
 
-from .mct_integration import get_mct_project_data
-
 from .utils import setup_logging
 
 from .envs import STORAGE_PATH
@@ -134,15 +132,6 @@ def manage_experiments():
 
     return render_template('manage_experiments.html',
                            experiments=get_all_experiments())
-
-
-# Endpoint for making a GET request to a Django API endpoint
-@app.route("/annotated_projects")
-def annotated_projects():
-    data = get_mct_project_data()
-
-    return render_template("project_annotate_entities.html",
-                           data=data)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,6 @@ import re
 from urllib.parse import urlparse
 
 from .medcat_integration import get_cdb_hash
-from .mlflow_integration import register_mct_cdbs
 from .utils import expire_cache_after
 from .envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
 
@@ -167,31 +166,12 @@ def _get_hash_for_cdb(cdb_id: str, cdb_file: str) -> Optional[str]:
     return get_cdb_hash(temp_file)
 
 
-def get_mct_project_data() -> list[dict]:
-    response_data = _get_from_endpoint("project-annotate-entities/")
-
-    output = []
-    used_cdb_ids = set()
-    for project in response_data:
-        name = project["name"]
-        cdb_id = project["concept_db"]
-        if cdb_id in used_cdb_ids:
-            continue  # using CDB that was already handled
-        used_cdb_ids.add(cdb_id)
-        dataset_id = project["dataset"]
-        cdb_descr, cdb_file = _get_cdb(cdb_id)
-        logger.info("CDB (ID, descr, file): %s, %s, %s",
-                    cdb_id, cdb_descr, cdb_file)
-        output.append(
-            {"name": name,
-             "cdb": cdb_descr,
-             "dataset": _get_dataset(dataset_id),
-             "cdb_ID": cdb_id,
-             "cdb_HASH": _get_hash_for_cdb(cdb_id, cdb_file)
-             }
-        )
-    logger.info("Found %d MCT project data", len(output))
-    # populate MCT hashes
-    for cdb in output:
-        register_mct_cdbs(cdb["cdb_ID"], cdb["cdb"], cdb["cdb_HASH"])
-    return output
+@expire_cache_after(60)
+def get_mct_cdb_id(cdb_hash: str) -> Optional[str]:
+    for cdb in _get_all_cdbs():
+        cdb_id = cdb["id"]
+        cdb_file = cdb["cdb_file"]
+        cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        if cur_hash == cdb_hash:
+            return cdb_id
+    return None

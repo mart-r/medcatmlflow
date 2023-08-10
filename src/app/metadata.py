@@ -4,6 +4,7 @@ from dataclasses import dataclass, field, fields
 from typing import Optional
 
 from .medcat_integration import _attempt_fix_big, _load_CAT
+from .mct_integration import get_mct_cdb_id
 
 
 @dataclass
@@ -62,6 +63,8 @@ def create_meta(file_path: str,
     changed_parts = [
         part_name for part_name, change in zip(part_names, changes) if change
     ]
+    cdb_hash = cat.cdb.get_hash()
+    mct_cdb_id = get_mct_cdb_id(cdb_hash)
     return ModelMetaData(
         category=category,
         model_file_name=model_name,
@@ -71,5 +74,6 @@ def create_meta(file_path: str,
         cui2average_confidence=cui2average_confidence,
         cui2count_train=cui2count_train,
         changed_parts=changed_parts,
-        cdb_hash=cat.cdb.get_hash(),
+        cdb_hash=cdb_hash,
+        mct_cdb_id=mct_cdb_id,
     )
