@@ -14,6 +14,8 @@ from .envs import LOG_PATH
 from .envs import LOG_BACKUP_DAYS
 from .envs import LOG_LEVEL
 
+logger = logging.getLogger(__name__)
+
 
 def _set_parent(node_dict: dict[str, Node],
                 parent_name: str,
@@ -22,12 +24,12 @@ def _set_parent(node_dict: dict[str, Node],
     child = node_dict[child_name]
     parent = node_dict[parent_name]
     if (child.parent and child.parent is not parent):
-        print('PARENTS DO NOT MATCH')
-        print(f'The parent of {child_name} should be {parent_name}')
+        logger.info('PARENTS DO NOT MATCH')
+        logger.info('The parent of %s should be %s', child_name, parent_name)
         if keep_existing:
-            print(f"Keeping existing parent ({child.parent.name})")
+            logger.info("Keeping existing parent (%s)", child.parent.name)
             return
-        print(f"Moving to new parent ({parent_name})")
+        logger.info("Moving to new parent (%s)", parent_name)
     elif not child.parent:
         child.parent = parent
 
