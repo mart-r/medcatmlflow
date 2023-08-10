@@ -105,8 +105,13 @@ def _get_from_endpoint(endpoint: str) -> list[dict]:
 
 
 @expire_cache_after(60)  # expire every minute
+def _get_all_cdbs() -> list[dict]:
+    return _get_from_endpoint("concept-dbs/")
+
+
+@expire_cache_after(60)  # expire every minute
 def _get_cdb(cdb_id) -> tuple[str, Optional[str]]:
-    cdbs = _get_from_endpoint("concept-dbs/")
+    cdbs = _get_all_cdbs()
     # e.g:
     # [
     #   {'id': 5, 'name': 'snomed_cdb',
@@ -125,8 +130,13 @@ def _get_cdb(cdb_id) -> tuple[str, Optional[str]]:
 
 
 @expire_cache_after(60)  # expire every minute
+def _get_all_datasets() -> list[dict]:
+    return _get_from_endpoint("datasets/")
+
+
+@expire_cache_after(60)  # expire every minute
 def _get_dataset(dataset_id) -> str:
-    datasets = _get_from_endpoint("datasets/")
+    datasets = _get_all_datasets()
     # e.g:
     # [
     #   {'id': 2, 'name': 'Example Dataset',
