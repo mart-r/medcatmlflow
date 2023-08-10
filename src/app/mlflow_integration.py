@@ -9,9 +9,8 @@ from mlflow import MlflowClient, MlflowException
 from mlflow.entities import Experiment
 from mlflow.entities.model_registry import RegisteredModel
 
-from .utils import ModelMetaData
+from .metadata import ModelMetaData, create_meta
 from .utils import build_nodes, get_all_trees
-from .medcat_integration import create_meta
 
 from .envs import STORAGE_PATH
 

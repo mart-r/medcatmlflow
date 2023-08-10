@@ -1,12 +1,8 @@
-import copy
-
 import numbers
 
 from typing import Any
 
 import logging
-
-from .utils import ModelMetaData
 
 from medcat.cat import CAT
 from medcat.cdb import CDB
@@ -105,32 +101,6 @@ def _attempt_fix_big(*dicts: list[dict[str, Any]],
             s = str(d)
             changes[i] = True
     return tuple(dicts), changes
-
-
-def create_meta(file_path: str, model_name: str,
-                category: str) -> ModelMetaData:
-    cat = _load_CAT(file_path)
-    version = cat.config.version.id
-    version_history = ",".join(cat.config.version.history)
-    # make sure it's a deep copy
-    performance = copy.deepcopy(cat.config.version.performance)
-    cui2average_confidence = copy.deepcopy(cat.cdb.cui2average_confidence)
-    cui2count_train = copy.deepcopy(cat.cdb.cui2count_train)
-    (cui2average_confidence,
-     cui2count_train), changes = _attempt_fix_big(cui2average_confidence,
-                                                  cui2count_train)
-    part_names = ['cui2average_confidence', 'cui2count_train']
-    changed_parts = [part_name
-                     for part_name, change in zip(part_names, changes)
-                     if change]
-    return ModelMetaData(category=category,
-                         model_file_name=model_name, version=version,
-                         version_history=version_history,
-                         performance=performance,
-                         cui2average_confidence=cui2average_confidence,
-                         cui2count_train=cui2count_train,
-                         changed_parts=changed_parts,
-                         cdb_hash=cat.cdb.get_hash())
 
 
 def get_cdb_hash(cdb_file: str) -> str:

@@ -1,5 +1,4 @@
-from dataclasses import dataclass, fields, field
-from typing import Iterator, Callable, Optional
+from typing import Iterator, Callable
 import os
 import sys
 from functools import wraps
@@ -148,45 +147,6 @@ class DuplciateUploadException(ValueError):
     def __init__(self, msg) -> None:
         super().__init__(msg)
         self.msg = msg
-
-
-@dataclass
-class ModelMetaData:
-    category: str
-    version: str
-    version_history: list[str]
-    model_file_name: str
-    performance: dict
-    cui2average_confidence: dict
-    cui2count_train: dict
-    changed_parts: list[str]
-    cdb_hash: str
-    mct_cdb_id: Optional[str] = field(default=None)
-
-    def as_dict(self) -> dict:
-        return {
-            "category": self.category,
-            "version": self.version,
-            "version_history": self.version_history,
-            "model_file_name": self.model_file_name,
-            "performance": self.performance,
-            "cui2average_confidence": self.cui2average_confidence,
-            "cui2count_train": self.cui2count_train,
-            "changed_parts": self.changed_parts,
-            "cdb_hash": self.cdb_hash,
-            "mct_cdb_id": self.mct_cdb_id,
-        }
-
-    @classmethod
-    def get_keys(cls) -> set[str]:
-        return set(field.name for field in fields(cls))
-
-    @classmethod
-    def from_mlflow_model(cls, model) -> 'ModelMetaData':
-        kwargs = {}
-        for key in cls.get_keys():
-            kwargs[key] = model.tags[key]
-        return cls(**kwargs)
 
 
 def setup_logging(logger: logging.Logger) -> None:
