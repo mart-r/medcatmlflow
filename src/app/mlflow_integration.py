@@ -84,7 +84,8 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
 
     try:
         # db stuff
-        meta = create_meta(file_path, model_filename, category=experiment_name)
+        meta = create_meta(file_path, model_filename, category=experiment_name,
+                           hash2mct_id=get_existing_hash2mctid())
         MLFLOW_CLIENT.create_registered_model(model_filename,
                                               tags=meta.as_dict(),
                                               description=model_description)
@@ -228,7 +229,8 @@ def _recalc_model_metadata(model: RegisteredModel) -> None:
     file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
     meta = create_meta(file_path, model.name,
                        # if no category saved, we can't re-create
-                       category=model.tags['category'])
+                       category=model.tags['category'],
+                       hash2mct_id=get_existing_hash2mctid())
     _update_model_meta(model, meta)
 
 
@@ -280,3 +282,12 @@ def get_all_trees_with_links() -> list[tuple[str, str]]:
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter
     return get_all_trees(nodes, _get_hist_link)
+
+
+def get_existing_hash2mctid() -> dict:
+    out = {}
+    for model in MLFLOW_CLIENT.search_registered_models():
+        saved_meta = get_meta_model(model)
+        if saved_meta.mct_cdb_id:
+            out[saved_meta.cdb_hash] = saved_meta.mct_cdb_id
+    return out

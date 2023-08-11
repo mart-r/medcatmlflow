@@ -1,10 +1,13 @@
 import copy
+import logging
 
 from dataclasses import dataclass, field, fields
 from typing import Optional
 
 from .medcat_integration import _attempt_fix_big, _load_CAT
 from .mct_integration import get_mct_cdb_id
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -48,7 +51,8 @@ class ModelMetaData:
 
 def create_meta(file_path: str,
                 model_name: str,
-                category: str) -> ModelMetaData:
+                category: str,
+                hash2mct_id: dict) -> ModelMetaData:
     cat = _load_CAT(file_path)
     version = cat.config.version.id
     version_history = ",".join(cat.config.version.history)
@@ -64,7 +68,14 @@ def create_meta(file_path: str,
         part_name for part_name, change in zip(part_names, changes) if change
     ]
     cdb_hash = cat.cdb.get_hash()
-    mct_cdb_id = get_mct_cdb_id(cdb_hash)
+    if cdb_hash in hash2mct_id:
+        mct_cdb_id = hash2mct_id[cdb_hash]
+        logger.debug("Setting MCT CDB hash for '%s' to '%s' "
+                     "based on existing models", cdb_hash, mct_cdb_id)
+    else:
+        mct_cdb_id = get_mct_cdb_id(cdb_hash)
+        logger.debug("Setting MCT CDB hash for '%s' to '%s' "
+                     "as read from the CDB", cdb_hash, mct_cdb_id)
     return ModelMetaData(
         category=category,
         model_file_name=model_name,
