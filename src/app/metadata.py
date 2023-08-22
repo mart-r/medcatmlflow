@@ -21,6 +21,7 @@ class ModelMetaData:
     cui2count_train: dict
     changed_parts: list[str]
     cdb_hash: str
+    stats: dict
     mct_cdb_id: Optional[str] = field(default=None)
 
     def as_dict(self) -> dict:
@@ -34,6 +35,7 @@ class ModelMetaData:
             "cui2count_train": self.cui2count_train,
             "changed_parts": self.changed_parts,
             "cdb_hash": self.cdb_hash,
+            "stats": self.stats,
             "mct_cdb_id": self.mct_cdb_id,
         }
 
@@ -76,6 +78,7 @@ def create_meta(file_path: str,
         mct_cdb_id = get_mct_cdb_id(cdb_hash)
         logger.debug("Setting MCT CDB hash for '%s' to '%s' "
                      "as read from the CDB", cdb_hash, mct_cdb_id)
+    stats = cat.cdb.make_stats()
     return ModelMetaData(
         category=category,
         model_file_name=model_name,
@@ -86,5 +89,6 @@ def create_meta(file_path: str,
         cui2count_train=cui2count_train,
         changed_parts=changed_parts,
         cdb_hash=cdb_hash,
+        stats=stats,
         mct_cdb_id=mct_cdb_id,
     )

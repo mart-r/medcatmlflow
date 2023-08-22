@@ -226,11 +226,19 @@ def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
 
 
 def _recalc_model_metadata(model: RegisteredModel) -> None:
+    if 'cdb_hash' in model.tags:
+        cdb_hash = model.tags['cdb_hash']
+    else:
+        cdb_hash = None
+    if 'mct_cdb_id' in model.tags:
+        mct_cdb_id = model.tags['mct_cdb_id']
+    else:
+        mct_cdb_id = None
     file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
     meta = create_meta(file_path, model.name,
                        # if no category saved, we can't re-create
                        category=model.tags['category'],
-                       hash2mct_id=get_existing_hash2mctid())
+                       hash2mct_id={cdb_hash: mct_cdb_id})
     _update_model_meta(model, meta)
 
 
