@@ -173,6 +173,10 @@ def get_info(file_path: str) -> dict:
                 and not isinstance(cur_info['performance'], dict)):
             # TODO - make the below better
             cur_info["performance"] = eval(cur_info["performance"])
+        if ('stats' in cur_info
+                and not isinstance(cur_info['stats'], dict)):
+            # TODO - make the below better
+            cur_info["stats"] = eval(cur_info["stats"])
         cur_info['Internal ID'] = _get_run_id(model)
     else:
         cur_info = {"ISSUES": "Metadata not saved",
