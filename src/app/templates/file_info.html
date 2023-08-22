@@ -31,6 +31,30 @@
     </tbody>
 </table>
 
+<!-- Check if "stats" exists in the info dictionary -->
+{% if 'stats' in info %}
+    <h2>Model stats</h2>
+    <table>
+
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+
+    {% for performance_key, performance_value in info['stats'].items() %}
+        <tbody>
+            <tr>
+                <td>{{ performance_key }}</td>
+                <td>{{ performance_value }}</td>
+            </tr>
+        </tbody>
+    {% endfor %}
+    </table>
+
+{% endif %}
+
 <!-- Check if "performance" exists in the info dictionary -->
 {% if 'performance' in info %}
     <h2>Performance Information</h2>
@@ -57,27 +81,4 @@
 
 {% endif %}
 
-<!-- Check if "stass" exists in the info dictionary -->
-{% if 'stats' in info %}
-    <h2>Model stats</h2>
-    <table>
-
-    <thead>
-        <tr>
-            <th>Key</th>
-            <th>Value</th>
-        </tr>
-    </thead>
-
-    {% for performance_key, performance_value in info['stats'].items() %}
-        <tbody>
-            <tr>
-                <td>{{ performance_key }}</td>
-                <td>{{ performance_value }}</td>
-            </tr>
-        </tbody>
-    {% endfor %}
-    </table>
-
-{% endif %}
 {% endblock %}
