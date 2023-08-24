@@ -14,3 +14,5 @@ MCT_USERNAME = os.environ.get("MCT_USERNAME")
 MCT_PASSWORD = os.environ.get("MCT_PASSWORD")
 
 MCT_BASE_URL = os.environ.get("MCT_BASE_URL")
+
+MEDCATMLFLOW_DB_URI = os.environ.get("MEDCATMLFLOW_DB_URI")

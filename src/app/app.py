@@ -12,6 +12,8 @@ from .mlflow_integration import get_history, get_all_trees_with_links
 from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
 from .mlflow_integration import get_all_experiments, recalc_model_metedata
+from .datasets import get_test_datasets, upload_test_dataset
+from .models import setup_db
 
 from .utils import setup_logging
 
@@ -25,6 +27,9 @@ app = Flask(__name__)
 # Create a root logger
 logger = logging.getLogger()
 setup_logging(logger)
+
+# setup the database
+setup_db(app)
 
 
 # Endpoint to handle file uploads
@@ -132,6 +137,28 @@ def manage_experiments():
 
     return render_template('manage_experiments.html',
                            experiments=get_all_experiments())
+
+
+@app.route("/manage_datasets")
+def manage_datasets():
+    return render_template("manage_datasets.html",
+                           datasets=get_test_datasets())
+
+
+@app.route("/upload_dataset", methods=["GET", "POST"])
+def upload_dataset():
+    if request.method == "POST":
+        dataset_name = request.form.get("dataset_name")
+        dataset_description = request.form.get("dataset_description")
+        overwrite = request.form.get("overwrite") == "1"
+        file = request.files['file']
+        issues = upload_test_dataset(file.save, dataset_name,
+                                     dataset_description, overwrite)
+        if issues:
+            return issues
+        return redirect("/manage_datasets")
+
+    return render_template("upload_dataset.html")
 
 
 if __name__ == "__main__":
