@@ -13,6 +13,7 @@ from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
 from .mlflow_integration import get_all_experiments, recalc_model_metedata
 from .datasets import get_test_datasets, upload_test_dataset
+from .datasets import delete_test_dataset
 from .models import setup_db
 
 from .utils import setup_logging
@@ -139,8 +140,16 @@ def manage_experiments():
                            experiments=get_all_experiments())
 
 
-@app.route("/manage_datasets")
+@app.route("/manage_datasets", methods=['GET', 'POST'])
 def manage_datasets():
+    if request.method == 'POST':
+        ds_to_delete = request.form['dataset_name_to_delete']
+
+        # Remove the dataset given
+        delete_test_dataset(ds_to_delete)
+
+        # Redirect to refresh the page.
+        return redirect(url_for('manage_datasets'))
     return render_template("manage_datasets.html",
                            datasets=get_test_datasets())
 
