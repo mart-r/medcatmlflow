@@ -303,3 +303,25 @@ def get_existing_hash2mctid() -> dict:
         if saved_meta.mct_cdb_id:
             out[saved_meta.cdb_hash] = saved_meta.mct_cdb_id
     return out
+
+
+def get_all_model_descr_and_files() -> list[tuple[str, str]]:
+    out = []
+    for model in MLFLOW_CLIENT.search_registered_models():
+        saved_meta = get_meta_model(model)
+        out.append((model.description, saved_meta.model_file_name))
+    return out
+
+
+def get_model_from_file_name(model_file: str) -> Optional[ModelMetaData]:
+    model = MLFLOW_CLIENT.get_registered_model(model_file)
+    if model:
+        return get_meta_model(model)
+    return None
+
+
+def get_model_descr_from_file(model_file: str) -> Optional[str]:
+    model = MLFLOW_CLIENT.get_registered_model(model_file)
+    if model:
+        return model.description
+    return None

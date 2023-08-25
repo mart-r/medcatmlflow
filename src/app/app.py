@@ -12,6 +12,9 @@ from .mlflow_integration import get_history, get_all_trees_with_links
 from .mlflow_integration import has_experiment, create_mlflow_experiment
 from .mlflow_integration import get_all_experiment_names, delete_experiment
 from .mlflow_integration import get_all_experiments, recalc_model_metedata
+from .mlflow_integration import get_all_model_descr_and_files
+from .mlflow_integration import get_model_descr_from_file
+from .medcat_integration import get_performance
 from .datasets import get_test_datasets, upload_test_dataset
 from .datasets import delete_test_dataset
 from .models import setup_db
@@ -168,6 +171,32 @@ def upload_dataset():
         return redirect("/manage_datasets")
 
     return render_template("upload_dataset.html")
+
+
+@app.route('/show_performance', methods=['GET'])
+def show_performance():
+    available_models = get_all_model_descr_and_files()
+    available_datasets = get_test_datasets()
+    return render_template("show_performance.html",
+                           available_models=available_models,
+                           available_datasets=available_datasets)
+
+
+@app.route('/calculate_performance', methods=['POST'])
+def calculate_performance():
+    selected_model_files = request.form.getlist('selected_models')
+    selected_dataset_files = request.form.getlist('selected_datasets')
+
+    models = [
+        (get_model_descr_from_file(model_file),
+         os.path.join(STORAGE_PATH, model_file))
+        for model_file in selected_model_files
+    ]
+
+    performance_results = get_performance(models, selected_dataset_files)
+
+    return render_template("performance_result.html",
+                           performance_results=performance_results)
 
 
 if __name__ == "__main__":

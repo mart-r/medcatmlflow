@@ -1,6 +1,6 @@
 import numbers
 
-from typing import Any
+from typing import Any, Iterator
 
 import logging
 
@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 import shutil
 import os
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -106,3 +107,34 @@ def _attempt_fix_big(*dicts: list[dict[str, Any]],
 def get_cdb_hash(cdb_file: str) -> str:
     cdb = CDB.load(cdb_file)
     return cdb.get_hash()
+
+
+def _iterate_datasets(dataset_files: list[str]) -> Iterator[tuple[str, dict]]:
+    for dsf in dataset_files:
+        with open(dsf) as f:
+            data = json.load(f)
+        yield dsf, data
+
+
+def get_performance(models: list[tuple[str, str]],
+                    dataset_files: list[str]) -> dict:
+    out = {}
+    for model_name, model_file in models:
+        cat = CAT.load_model_pack(model_file)
+        per_model = {}
+        for file_name, data in _iterate_datasets(dataset_files):
+            (fps, fns, tps,
+             cui_prec, cui_rec, cui_f1,
+             cui_counts, examples) = cat._print_stats(data)
+            per_model[file_name] = {
+                "False positives": fps,
+                "False negatives": fns,
+                "True postiives": tps,
+                "Precision for each CUI": cui_prec,
+                "Recall for each CUI": cui_rec,
+                "F1 for each CUI": cui_f1,
+                "Counts for each CUI": cui_counts,
+                "Examples for each of the fp, fn, tp": examples
+            }
+        out[model_name] = per_model
+    return out

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Show Performance{% endblock %}
+
+{% block content %}
+<h1>Show Performance</h1>
+
+<form method="post" action="/calculate_performance">
+    <h2>Select Models:</h2>
+    {% for model_name, model_file in available_models %}
+        <label>
+            <input type="checkbox" name="selected_models" value="{{ model_file }}">
+            {{ model_name }}
+        </label><br>
+    {% endfor %}
+    
+    <h2>Select Datasets:</h2>
+    {% for ds_name, ds_descr, ds_file in available_datasets %}
+        <label>
+            <input type="checkbox" name="selected_datasets" value="{{ ds_file }}">
+            {{ ds_name }}
+        </label><br>
+    {% endfor %}
+    
+    <br><br>
+    <button type="submit">Show Performance</button>
+</form>
+
+{% endblock %}
