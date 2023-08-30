@@ -11,9 +11,10 @@ DATASET_PATH = os.path.join(STORAGE_PATH, "test_datasets")
 logger = logging.getLogger(__name__)
 
 
-def get_test_datasets() -> list[tuple[str, str, str]]:
+def get_test_datasets() -> list[tuple[str, str, str, str]]:
     datasets: list[TestDataset] = TestDataset.query.all()
-    return [(ds.name, ds.description, ds.file_path) for ds in datasets]
+    return [(ds.category_name, ds.name, ds.description, ds.file_path)
+            for ds in datasets]
 
 
 def _get_ds_file(ds_name: str) -> str:
@@ -22,6 +23,7 @@ def _get_ds_file(ds_name: str) -> str:
 
 def upload_test_dataset(
     file_saver: Callable[[str], None],
+    category_name: str,
     ds_name: str,
     ds_description: str,
     overwrite: bool,
@@ -36,8 +38,8 @@ def upload_test_dataset(
     file_saver(file_path)
 
     # save info to databse
-    descr = TestDataset(name=ds_name, description=ds_description,
-                        file_path=file_path)
+    descr = TestDataset(name=ds_name, category_name=category_name,
+                        description=ds_description, file_path=file_path)
 
     flask_db.session.add(descr)
     flask_db.session.commit()

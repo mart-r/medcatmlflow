@@ -18,6 +18,7 @@ def setup_db(app: Flask):
 
 class TestDataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    category_name = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(250))
     file_path = db.Column(db.String(200), nullable=False)

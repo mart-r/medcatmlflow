@@ -162,15 +162,17 @@ def upload_dataset():
     if request.method == "POST":
         dataset_name = request.form.get("dataset_name")
         dataset_description = request.form.get("dataset_description")
+        category = request.form.get("category")
         overwrite = request.form.get("overwrite") == "1"
         file = request.files['file']
-        issues = upload_test_dataset(file.save, dataset_name,
+        issues = upload_test_dataset(file.save, category, dataset_name,
                                      dataset_description, overwrite)
         if issues:
             return issues
         return redirect("/manage_datasets")
 
-    return render_template("upload_dataset.html")
+    return render_template("upload_dataset.html",
+                           categories=get_all_experiment_names())
 
 
 @app.route('/show_performance', methods=['GET'])

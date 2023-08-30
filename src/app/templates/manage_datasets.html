@@ -7,13 +7,15 @@
 {% if datasets %}
     <table border="1">
         <tr>
+            <th>Category</th>
             <th>Name</th>
             <th>Description</th>
             <th>File path</th>
             <th>Actions</th>
         </tr>
-        {% for name, description, file_path in datasets %}
+        {% for category, name, description, file_path in datasets %}
         <tr>
+            <td>{{ category }}</td>
             <td>{{ name }}</td>
             <td>{{ description }}</td>
             <td>{{ file_path }}</td>
