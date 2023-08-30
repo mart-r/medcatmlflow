@@ -305,11 +305,12 @@ def get_existing_hash2mctid() -> dict:
     return out
 
 
-def get_all_model_descr_and_files() -> list[tuple[str, str]]:
+def get_all_model_cat_descr_and_files() -> list[tuple[str, str, str]]:
     out = []
     for model in MLFLOW_CLIENT.search_registered_models():
         saved_meta = get_meta_model(model)
-        out.append((model.description, saved_meta.model_file_name))
+        out.append((saved_meta.category, model.description,
+                    saved_meta.model_file_name))
     return out
 
 
