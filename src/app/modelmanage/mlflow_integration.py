@@ -9,13 +9,13 @@ from mlflow import MlflowClient, MlflowException
 from mlflow.entities import Experiment
 from mlflow.entities.model_registry import RegisteredModel
 
-from .metadata import ModelMetaData, create_meta
-from .utils import build_nodes, get_all_trees
+from ..medcat_linkage.metadata import ModelMetaData, create_meta
+from ..main.utils import build_nodes, get_all_trees
 
-from .envs import STORAGE_PATH
+from ..main.envs import STORAGE_PATH
 
 # Configure MLflow
-from .envs import DB_URI
+from ..main.envs import DB_URI
 
 MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
 

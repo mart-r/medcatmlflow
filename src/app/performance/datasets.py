@@ -3,8 +3,8 @@ import os
 
 import logging
 
-from .envs import STORAGE_PATH
-from .models import db as flask_db, TestDataset
+from ..main.envs import STORAGE_PATH
+from ..main.models import db as flask_db, TestDataset
 
 DATASET_PATH = os.path.join(STORAGE_PATH, "test_datasets")
 

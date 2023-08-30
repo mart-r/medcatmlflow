@@ -17,7 +17,7 @@
                 <td>{{ version }}</td>
                 <td>
                     {% if filename %}
-                        <a href="{{ url_for('show_file_info', filename=filename) }}">Info</a>
+                        <a href="{{ url_for('modelmanage.show_file_info', filename=filename) }}">Info</a>
                     {% else %}
                         N/A
                     {% endif %}

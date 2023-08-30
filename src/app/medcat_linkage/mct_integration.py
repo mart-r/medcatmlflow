@@ -8,8 +8,8 @@ import re
 from urllib.parse import urlparse
 
 from .medcat_integration import get_cdb_hash
-from .utils import expire_cache_after
-from .envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
+from ..main.utils import expire_cache_after
+from ..main.envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
 
 logger = logging.getLogger(__name__)
 

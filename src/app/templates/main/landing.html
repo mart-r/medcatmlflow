@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to the medcatmlflow Service{% endblock %}
+
+{% block content %}
+<h1>Welcome! You can start here!</h1>
+<p>Use the following links to browse files or upload a new file:</p>
+<ul>
+    <li><a href="{{ url_for('modelmanage.manage_experiments') }}">Categories</a></li>
+    <li><a href="{{ url_for('modelmanage.browse_files') }}">Browse Files</a></li>
+    <li><a href="{{ url_for('modelmanage.upload_file') }}">Upload File</a></li>
+    <li><a href="{{ url_for('modelmanage.all_trees') }}">All Trees</a></li>
+    <li><a href="{{ url_for('performance.manage_datasets') }}">Test Datasets</a></li>
+    <li><a href="{{ url_for('performance.show_performance') }}">Performance</a></li>
+</ul>
+{% endblock %}

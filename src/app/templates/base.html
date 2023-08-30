@@ -6,13 +6,13 @@
 <body>
     <!-- Common header or navigation -->
     <nav>
-        <a href="{{ url_for('landing_page') }}">Home</a>
-        <a href="{{ url_for('manage_experiments') }}">Categories</a>
-        <a href="{{ url_for('browse_files') }}">Browse Files</a>
-        <a href="{{ url_for('upload_file') }}">Upload File</a>
-        <a href="{{ url_for('all_trees') }}">All Trees</a>
-        <a href="{{ url_for('manage_datasets') }}">Test Datasets</a>
-        <a href="{{ url_for('show_performance') }}">Performance</a>
+        <a href="{{ url_for('main.landing_page') }}">Home</a>
+        <a href="{{ url_for('modelmanage.manage_experiments') }}">Categories</a>
+        <a href="{{ url_for('modelmanage.browse_files') }}">Browse Files</a>
+        <a href="{{ url_for('modelmanage.upload_file') }}">Upload File</a>
+        <a href="{{ url_for('modelmanage.all_trees') }}">All Trees</a>
+        <a href="{{ url_for('performance.manage_datasets') }}">Test Datasets</a>
+        <a href="{{ url_for('performance.show_performance') }}">Performance</a>
         <!-- <a href="#">Link 1</a> -->
         <!-- Add more links here as needed -->
     </nav>
