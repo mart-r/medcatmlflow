@@ -3,7 +3,7 @@ from flask import redirect, url_for
 
 import os
 
-from ..modelmanage.mlflow_integration import (
+from .mlflow_integration import (
     attempt_upload, get_files_with_info, delete_mlflow_file,
     get_info, get_history, get_all_experiment_names, recalc_model_metedata,
     get_all_trees_with_links, has_experiment, create_mlflow_experiment,
