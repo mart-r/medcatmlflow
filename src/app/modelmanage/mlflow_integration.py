@@ -252,8 +252,9 @@ def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     run_id = _get_run_id(model)
     try:
         meta = ModelMetaData.from_mlflow_model(model, run_id=run_id)
-    except KeyError:  # old model data with not all the keys
-        logger.warning("Recalculating meta - not everything was saved on disk")
+    except KeyError as e:  # old model data with not all the keys
+        logger.warning("Recalculating meta - not everything was saved on disk"
+                       " exception: %e", e)
         _recalc_model_metadata(model)
         meta = ModelMetaData.from_mlflow_model(model, run_id=run_id)
     return meta
