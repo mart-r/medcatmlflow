@@ -1,6 +1,4 @@
-import numbers
-
-from typing import Any, Iterator
+from typing import Iterator
 
 import logging
 
@@ -76,64 +74,6 @@ def load_CAT(file_path: str, overwrite: bool = True) -> CAT:
                        "config.linking.filters.cuis",
                        file_path, exc_info=e)
     return _try_update_and_load(file_path, overwrite)
-
-
-def _remove_half(d: dict[str, Any], smallest: bool = True) -> None:
-    # this expects all the values to be of the same
-    # (or similar) type so they all can (or cannot)
-    # be compared
-    all_keys = list(d.keys())
-    half_length = len(all_keys)//2
-    key0 = all_keys[0]
-    val0 = d[key0]
-    is_numeric = isinstance(val0, numbers.Number)
-    if is_numeric:
-        # remove the smallest (or biggest) elements
-        ordered_keys = sorted(all_keys, key=lambda k: d[k],
-                              reverse=not smallest)
-        for key in ordered_keys[:half_length]:
-            del d[key]
-    else:
-        # remove random
-        # i.e the first ones that come up
-        for key in all_keys[:half_length]:
-            del d[key]
-
-
-def attempt_fix_big(*dicts: list[dict[str, Any]],
-                    limit: int = 5000) -> tuple[list[dict[str, Any]],
-                                                list[bool]]:
-    """Attempts to fix big pieces of data.
-
-    This is because in the way the saving happens doesn't
-    allow too much data to be saved at once.
-
-    If a part is found that is too big, it is truncated.
-
-    Args:
-        *dicts (list[dict[str, Any]]): The list of dicts to check
-        limit (int, optional): _description_. Defaults to 5000.
-
-    Returns:
-        tuple[list[dict[str, Any]], list[bool]]: The (potentially) changed
-            dicts, and the list of changes
-    """
-    dicts = list(dicts)
-    changes = [False for _ in dicts]
-    for i, d in enumerate(dicts):
-        if not isinstance(d, dict):
-            logger.info("Found a dict that needs unwrapped (%s)", d)
-            # in case of Delegating dicts, for instance
-            # simply unwrap
-            d = dict(**d)
-            dicts[i] = d
-        s = str(d)
-        while len(s) > limit:
-            logger.info("Truncating dict from length %d to half size", len(s))
-            _remove_half(d)
-            s = str(d)
-            changes[i] = True
-    return tuple(dicts), changes
 
 
 def get_cdb_hash(cdb_file: str) -> str:

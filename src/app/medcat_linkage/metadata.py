@@ -6,7 +6,7 @@ from typing import Optional
 
 from mlflow.entities.model_registry import RegisteredModel
 
-from .medcat_integration import attempt_fix_big, load_CAT
+from .medcat_integration import load_CAT
 from .mct_integration import get_mct_cdb_id
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,6 @@ class ModelMetaData:
     version_history: list[str]
     model_file_name: str
     performance: dict
-    cui2average_confidence: dict
-    cui2count_train: dict
     changed_parts: list[str]
     cdb_hash: str
     stats: dict
@@ -37,8 +35,6 @@ class ModelMetaData:
             "version_history": self.version_history,
             "model_file_name": self.model_file_name,
             "performance": self.performance,
-            "cui2average_confidence": self.cui2average_confidence,
-            "cui2count_train": self.cui2count_train,
             "changed_parts": self.changed_parts,
             "cdb_hash": self.cdb_hash,
             "stats": self.stats,
@@ -71,15 +67,8 @@ def create_meta(file_path: str,
     version_history = ",".join(cat.config.version.history)
     # make sure it's a deep copy
     performance = copy.deepcopy(cat.config.version.performance)
-    cui2average_confidence = copy.deepcopy(cat.cdb.cui2average_confidence)
-    cui2count_train = copy.deepcopy(cat.cdb.cui2count_train)
-    (cui2average_confidence, cui2count_train), changes = attempt_fix_big(
-        cui2average_confidence, cui2count_train
-    )
-    part_names = ["cui2average_confidence", "cui2count_train"]
-    changed_parts = [
-        part_name for part_name, change in zip(part_names, changes) if change
-    ]
+    # in case something gets modified - nothing right now
+    changed_parts = []
     cdb_hash = cat.cdb.get_hash()
     if cdb_hash in hash2mct_id:
         mct_cdb_id = hash2mct_id[cdb_hash]
@@ -98,8 +87,6 @@ def create_meta(file_path: str,
         description=description,
         version_history=version_history,
         performance=performance,
-        cui2average_confidence=cui2average_confidence,
-        cui2count_train=cui2count_train,
         changed_parts=changed_parts,
         cdb_hash=cdb_hash,
         stats=stats,
