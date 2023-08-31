@@ -8,8 +8,8 @@ from ..modelmanage.mlflow_integration import (
     get_model_descr_from_file
 )
 from ..medcat_linkage.medcat_integration import get_performance
-from ..performance.datasets import get_test_datasets, upload_test_dataset
-from ..performance.datasets import delete_test_dataset
+from .datasets import get_test_datasets, upload_test_dataset
+from .datasets import delete_test_dataset
 
 from ..main.envs import STORAGE_PATH
 
