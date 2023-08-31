@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ModelMetaData:
     category: str
+    run_id: str
     version: str
     description: str
     version_history: list[str]
@@ -30,6 +31,7 @@ class ModelMetaData:
     def as_dict(self) -> dict:
         return {
             "category": self.category,
+            "run_id": self.run_id,
             "version": self.version,
             "description": self.description,
             "version_history": self.version_history,
@@ -48,11 +50,13 @@ class ModelMetaData:
         return set(field.name for field in fields(cls))
 
     @classmethod
-    def from_mlflow_model(cls, model: RegisteredModel) -> "ModelMetaData":
+    def from_mlflow_model(cls, model: RegisteredModel,
+                          run_id: str) -> "ModelMetaData":
         kwargs = {}
         for key in cls.get_keys():
             kwargs[key] = model.tags[key]
         kwargs['description'] = model.description
+        kwargs['run_id'] = run_id
         return cls(**kwargs)
 
 
@@ -60,6 +64,7 @@ def create_meta(file_path: str,
                 model_name: str,
                 description: str,
                 category: str,
+                run_id: str,
                 hash2mct_id: dict) -> ModelMetaData:
     cat = load_CAT(file_path)
     version = cat.config.version.id
@@ -87,6 +92,7 @@ def create_meta(file_path: str,
     stats = cat.cdb.make_stats()
     return ModelMetaData(
         category=category,
+        run_id=run_id,
         model_file_name=model_name,
         version=version,
         description=description,

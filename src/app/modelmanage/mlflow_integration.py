@@ -87,6 +87,7 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
         meta = create_meta(file_path, model_filename,
                            description=model_description,
                            category=experiment_name,
+                           run_id=run_id,
                            hash2mct_id=get_existing_hash2mctid())
         MLFLOW_CLIENT.create_registered_model(model_filename,
                                               tags=meta.as_dict(),
@@ -124,19 +125,15 @@ def _get_run_id(model: RegisteredModel,
 
 
 def get_files_with_info() -> list[dict]:
-    # Query for registered models
-    models = MLFLOW_CLIENT.search_registered_models()
-
     # Print the list of models and their information
     files_with_info = []
-    for model in models:
-        run_id = _get_run_id(model)
+    for model in get_all_model_metadata():
         cur_info = {
-            "name": model.name,
-            "version": model.tags['version'],
+            "name": model.model_file_name,
+            "version": model.version,
             "description": model.description,
-            "experiment": model.tags['category'],
-            "run_id": run_id,
+            "experiment": model.category,
+            "run_id": model.run_id,
         }
         files_with_info.append(cur_info)
     return files_with_info
@@ -241,21 +238,24 @@ def _recalc_model_metadata(model: RegisteredModel) -> None:
     else:
         mct_cdb_id = None
     file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
+    run_id = _get_run_id(model)
     meta = create_meta(file_path, model.name,
                        description=model.description,
                        # if no category saved, we can't re-create
                        category=model.tags['category'],
+                       run_id=run_id,
                        hash2mct_id={cdb_hash: mct_cdb_id})
     _update_model_meta(model, meta)
 
 
 def get_meta_model(model: RegisteredModel) -> ModelMetaData:
+    run_id = _get_run_id(model)
     try:
-        meta = ModelMetaData.from_mlflow_model(model)
+        meta = ModelMetaData.from_mlflow_model(model, run_id=run_id)
     except KeyError:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk")
         _recalc_model_metadata(model)
-        meta = ModelMetaData.from_mlflow_model(model)
+        meta = ModelMetaData.from_mlflow_model(model, run_id=run_id)
     return meta
 
 
@@ -282,18 +282,14 @@ def get_history(file_path: str) -> list:
 
 
 def get_all_trees_with_links() -> list[tuple[str, str]]:
-    # Query for registered models
-    models = MLFLOW_CLIENT.search_registered_models()
-
     data: dict[str, tuple[list[str], str]] = {}
-    for model in models:
-        saved_meta = get_meta_model(model)
+    for saved_meta in get_all_model_metadata():
         if saved_meta:
             version = saved_meta.version
             # remove empty versions
             versions = [ver for ver in saved_meta.version_history.split(",")
                         if ver]
-            data[version] = (versions, model.tags['category'])
+            data[version] = (versions, saved_meta.category)
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter
     return get_all_trees(nodes, _get_hist_link)
@@ -312,15 +308,6 @@ def get_all_model_metadata() -> list[ModelMetaData]:
             in MLFLOW_CLIENT.search_registered_models()]
 
 
-def get_all_model_cat_descr_and_files() -> list[tuple[str, str, str]]:
-    out = []
-    for model in MLFLOW_CLIENT.search_registered_models():
-        saved_meta = get_meta_model(model)
-        out.append((saved_meta.category, model.description,
-                    saved_meta.model_file_name))
-    return out
-
-
 def get_model_from_file_name(model_file: str) -> Optional[ModelMetaData]:
     model = MLFLOW_CLIENT.get_registered_model(model_file)
     if model:
@@ -329,7 +316,7 @@ def get_model_from_file_name(model_file: str) -> Optional[ModelMetaData]:
 
 
 def get_model_descr_from_file(model_file: str) -> Optional[str]:
-    model = MLFLOW_CLIENT.get_registered_model(model_file)
+    model = get_model_from_file_name(model_file)
     if model:
         return model.description
     return None
