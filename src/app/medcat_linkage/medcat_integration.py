@@ -17,7 +17,7 @@ import json
 logger = logging.getLogger(__name__)
 
 
-def _try_update(file_path: str, overwrite: bool = True) -> CAT:
+def _try_update_and_load(file_path: str, overwrite: bool = True) -> CAT:
     if file_path.endswith('.zip'):
         new_model = file_path[:-4] + '_cbdfix'
     else:
@@ -50,7 +50,24 @@ def _try_update(file_path: str, overwrite: bool = True) -> CAT:
     return CAT.load_model_pack(zip_path)
 
 
-def _load_CAT(file_path: str, overwrite: bool = True) -> CAT:
+def load_CAT(file_path: str, overwrite: bool = True) -> CAT:
+    """Load CAT or update and load CAT.
+
+    If there's a ValidationError (common for older models)
+    while loading the model this method will attempt to fix
+    the underlying issue and load the subsequent model.
+
+    The user can specify whether or not the fixed model
+    overwrites the existing one.
+
+    Args:
+        file_path (str): The model ZIP to load.
+        overwrite (bool, optional): Whether to overwrite old model when
+            trying to update. Defaults to True.
+
+    Returns:
+        CAT: The loaded model.
+    """
     try:
         return CAT.load_model_pack(file_path)
     except ValidationError as e:
@@ -58,7 +75,7 @@ def _load_CAT(file_path: str, overwrite: bool = True) -> CAT:
                        "Trying to load after fixing issue with "
                        "config.linking.filters.cuis",
                        file_path, exc_info=e)
-    return _try_update(file_path, overwrite)
+    return _try_update_and_load(file_path, overwrite)
 
 
 def _remove_half(d: dict[str, Any], smallest: bool = True) -> None:
@@ -83,9 +100,24 @@ def _remove_half(d: dict[str, Any], smallest: bool = True) -> None:
             del d[key]
 
 
-def _attempt_fix_big(*dicts: list[dict[str, Any]],
-                     limit: int = 5000) -> tuple[list[dict[str, Any]],
-                                                 list[bool]]:
+def attempt_fix_big(*dicts: list[dict[str, Any]],
+                    limit: int = 5000) -> tuple[list[dict[str, Any]],
+                                                list[bool]]:
+    """Attempts to fix big pieces of data.
+
+    This is because in the way the saving happens doesn't
+    allow too much data to be saved at once.
+
+    If a part is found that is too big, it is truncated.
+
+    Args:
+        *dicts (list[dict[str, Any]]): The list of dicts to check
+        limit (int, optional): _description_. Defaults to 5000.
+
+    Returns:
+        tuple[list[dict[str, Any]], list[bool]]: The (potentially) changed
+            dicts, and the list of changes
+    """
     dicts = list(dicts)
     changes = [False for _ in dicts]
     for i, d in enumerate(dicts):
@@ -105,6 +137,14 @@ def _attempt_fix_big(*dicts: list[dict[str, Any]],
 
 
 def get_cdb_hash(cdb_file: str) -> str:
+    """Get the hash of a CDB based on file.
+
+    Args:
+        cdb_file (str): The CDB file.
+
+    Returns:
+        str: The CDB hash.
+    """
     cdb = CDB.load(cdb_file)
     return cdb.get_hash()
 
@@ -118,6 +158,38 @@ def _iterate_datasets(dataset_files: list[str]) -> Iterator[tuple[str, dict]]:
 
 def get_performance(models: list[tuple[str, str]],
                     dataset_files: list[str]) -> dict:
+    """Get the performance of models given the specified datasets.
+
+    This method iterates over all models and all datasets.
+    And it runs CAT._print_stats over each model-dataset pair.
+
+    The end result is a dict in the following rough format:
+    {
+        "model_name":
+        {
+            "dataset name 1":
+            {
+                "False positives": int,
+                "False negatives": int,
+                "True postiives": int,
+                "Precision for each CUI": dict[str, float],
+                "Recall for each CUI": dict[str, float],
+                "F1 for each CUI": dict[str, float],
+                "Counts for each CUI": dict[str, float],
+                "Examples for each of the fp, fn, tp": dict[str, float]
+            },
+            ...
+        },
+        ...
+    }
+
+    Args:
+        models (list[tuple[str, str]]): _description_
+        dataset_files (list[str]): _description_
+
+    Returns:
+        dict: _description_
+    """
     out = {}
     for model_name, model_file in models:
         cat = CAT.load_model_pack(model_file)

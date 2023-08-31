@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass, field, fields
 from typing import Optional
 
-from .medcat_integration import _attempt_fix_big, _load_CAT
+from .medcat_integration import attempt_fix_big, load_CAT
 from .mct_integration import get_mct_cdb_id
 
 logger = logging.getLogger(__name__)
@@ -55,14 +55,14 @@ def create_meta(file_path: str,
                 model_name: str,
                 category: str,
                 hash2mct_id: dict) -> ModelMetaData:
-    cat = _load_CAT(file_path)
+    cat = load_CAT(file_path)
     version = cat.config.version.id
     version_history = ",".join(cat.config.version.history)
     # make sure it's a deep copy
     performance = copy.deepcopy(cat.config.version.performance)
     cui2average_confidence = copy.deepcopy(cat.cdb.cui2average_confidence)
     cui2count_train = copy.deepcopy(cat.cdb.cui2count_train)
-    (cui2average_confidence, cui2count_train), changes = _attempt_fix_big(
+    (cui2average_confidence, cui2count_train), changes = attempt_fix_big(
         cui2average_confidence, cui2count_train
     )
     part_names = ["cui2average_confidence", "cui2count_train"]
