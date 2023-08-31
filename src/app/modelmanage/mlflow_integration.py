@@ -282,7 +282,8 @@ def get_history(file_path: str) -> list:
                 ("SAVED META", str(model))]
 
 
-def get_all_trees_with_links() -> list[tuple[str, str]]:
+def get_all_trees_with_links(
+) -> list[tuple[list[tuple[str, str, str, str]], str]]:
     data: dict[str, tuple[list[str], str]] = {}
     for saved_meta in get_all_model_metadata():
         if saved_meta:
