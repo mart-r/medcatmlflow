@@ -3,9 +3,24 @@
 {% block title %}All Trees{% endblock %}
 
 {% block content %}
+<style>
+    .tree-item {
+        margin-bottom: 5px; /* Adjust this value to control spacing */
+    }
+</style>
+
 <h1>All Trees</h1>
 {% for tree, category in all_trees_with_links %}
     <h2>{{ category }}</h2>
-    <pre>{{ tree | safe }}</pre>  <!-- Use the 'safe' filter to render the HTML links -->
+    {% for prefix, name, link in tree %}
+        <div class="tree-item">
+            <pre style="display: inline;">{{ prefix }}</pre>
+            {% if link %}
+                <a href="{{ link | safe }}" style="display: inline;">{{ name }}</a>
+            {% else %}
+                <span style="display: inline;">{{ name }}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
 {% endfor %}
 {% endblock %}

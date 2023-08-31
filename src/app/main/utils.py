@@ -117,7 +117,7 @@ def get_tree(root_node: Node) -> str:
 
 def get_all_trees(nodes: Iterator[Node],
                   model_link_func: Callable[[str], str]
-                  ) -> list[tuple[str, str]]:
+                  ) -> list[tuple[tuple[str, str, str], str]]:
     """Get all tree representations with links to corresponding models.
 
     Args:
@@ -126,20 +126,19 @@ def get_all_trees(nodes: Iterator[Node],
             Function to generate the link from model version.
 
     Returns:
-        list[tuple[str, str]]: All trees with links to corresponding models
-            alongside their respective categories.
+        list[tuple[tuple[str, str, str], str]]: All trees with links to
+            corresponding models alongside their respective categories.
     """
-    trees: list[tuple[str, str]] = []
+    # list of tree lines, and category
+    # each line: prefix, name, link
+    trees: list[tuple[tuple[str, str, str], str]] = []
     for root in find_roots(nodes):
-        tree_repr = ""
+        tree_repr = []
         for pre, _, node in RenderTree(root):
             # Get the link to the corresponding model
             model_link = model_link_func(node.name)
-            if model_link is None:
-                full_link = "N/A"
-            else:
-                full_link = f"<a href='{model_link}'>{model_link}</a>"
-            tree_repr += f"{pre}{node.name} (Model link: {full_link})\n"
+            # tree_repr += f"{pre}{node.name} (Model link: {full_link})\n"
+            tree_repr.append((pre, node.name, model_link))
         trees.append((tree_repr, root.category))
     return trees
 
