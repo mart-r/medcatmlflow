@@ -84,7 +84,9 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
 
     try:
         # db stuff
-        meta = create_meta(file_path, model_filename, category=experiment_name,
+        meta = create_meta(file_path, model_filename,
+                           description=model_description,
+                           category=experiment_name,
                            hash2mct_id=get_existing_hash2mctid())
         MLFLOW_CLIENT.create_registered_model(model_filename,
                                               tags=meta.as_dict(),
@@ -240,6 +242,7 @@ def _recalc_model_metadata(model: RegisteredModel) -> None:
         mct_cdb_id = None
     file_path = os.path.join(STORAGE_PATH, model.tags['model_file_name'])
     meta = create_meta(file_path, model.name,
+                       description=model.description,
                        # if no category saved, we can't re-create
                        category=model.tags['category'],
                        hash2mct_id={cdb_hash: mct_cdb_id})
@@ -298,11 +301,15 @@ def get_all_trees_with_links() -> list[tuple[str, str]]:
 
 def get_existing_hash2mctid() -> dict:
     out = {}
-    for model in MLFLOW_CLIENT.search_registered_models():
-        saved_meta = get_meta_model(model)
+    for saved_meta in get_all_model_metadata():
         if saved_meta.mct_cdb_id:
             out[saved_meta.cdb_hash] = saved_meta.mct_cdb_id
     return out
+
+
+def get_all_model_metadata() -> list[ModelMetaData]:
+    return [get_meta_model(model) for model
+            in MLFLOW_CLIENT.search_registered_models()]
 
 
 def get_all_model_cat_descr_and_files() -> list[tuple[str, str, str]]:

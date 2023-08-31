@@ -4,6 +4,8 @@ import logging
 from dataclasses import dataclass, field, fields
 from typing import Optional
 
+from mlflow.entities.model_registry import RegisteredModel
+
 from .medcat_integration import attempt_fix_big, load_CAT
 from .mct_integration import get_mct_cdb_id
 
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 class ModelMetaData:
     category: str
     version: str
+    description: str
     version_history: list[str]
     model_file_name: str
     performance: dict
@@ -28,6 +31,7 @@ class ModelMetaData:
         return {
             "category": self.category,
             "version": self.version,
+            "description": self.description,
             "version_history": self.version_history,
             "model_file_name": self.model_file_name,
             "performance": self.performance,
@@ -44,15 +48,17 @@ class ModelMetaData:
         return set(field.name for field in fields(cls))
 
     @classmethod
-    def from_mlflow_model(cls, model) -> "ModelMetaData":
+    def from_mlflow_model(cls, model: RegisteredModel) -> "ModelMetaData":
         kwargs = {}
         for key in cls.get_keys():
             kwargs[key] = model.tags[key]
+        kwargs['description'] = model.description
         return cls(**kwargs)
 
 
 def create_meta(file_path: str,
                 model_name: str,
+                description: str,
                 category: str,
                 hash2mct_id: dict) -> ModelMetaData:
     cat = load_CAT(file_path)
@@ -83,6 +89,7 @@ def create_meta(file_path: str,
         category=category,
         model_file_name=model_name,
         version=version,
+        description=description,
         version_history=version_history,
         performance=performance,
         cui2average_confidence=cui2average_confidence,
