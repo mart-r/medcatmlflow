@@ -57,6 +57,34 @@ def _get_experiment_id(experiment_name: str) -> str:
     return MLFLOW_CLIENT.get_experiment_by_name(experiment_name).experiment_id
 
 
+def _perform_upload(file_path: str, model_filename: str,
+                    model_description: str, category: str, run_id: str):
+    # db stuff
+    meta = create_meta(file_path, model_filename,
+                       description=model_description,
+                       category=category,
+                       run_id=run_id,
+                       hash2mct_id=get_existing_hash2mctid())
+    MLFLOW_CLIENT.create_registered_model(model_filename,
+                                          tags=meta.as_dict(),
+                                          description=model_description)
+    # Get the artifact URI for the logged file
+    artifact_uri = "runs:/{}/{}".format(run_id, file_path)
+    # Create a model version associated with the registered model and file
+    MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
+
+
+def _cleanup_upload(file_path: str, run_id: str):
+    # do cleanup on disk
+    os.remove(file_path)
+    if file_path.endswith('.zip'):
+        folder_path = file_path[:-4]
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path)
+    # delete MLFLOW stuff
+    MLFLOW_CLIENT.delete_run(run_id)
+
+
 def attempt_upload(file_name: str, file_saver: Callable[[str], None],
                    experiment_name: str,
                    model_description: str,
@@ -83,30 +111,12 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
     model_filename = file_name
 
     try:
-        # db stuff
-        meta = create_meta(file_path, model_filename,
-                           description=model_description,
-                           category=experiment_name,
-                           run_id=run_id,
-                           hash2mct_id=get_existing_hash2mctid())
-        MLFLOW_CLIENT.create_registered_model(model_filename,
-                                              tags=meta.as_dict(),
-                                              description=model_description)
-        # Get the artifact URI for the logged file
-        artifact_uri = "runs:/{}/{}".format(run_id, file_path)
-        # Create a model version associated with the registered model and file
-        MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
+        _perform_upload(file_path, model_filename, model_description,
+                        experiment_name, run_id)
     except Exception as e:
         logger.error("Unable to store model %s", file_name,
                      exc_info=e)
-        # do cleanup on disk
-        os.remove(file_path)
-        if file_path.endswith('.zip'):
-            folder_path = file_path[:-4]
-            if os.path.exists(folder_path):
-                shutil.rmtree(folder_path)
-        # delete MLFLOW stuff
-        MLFLOW_CLIENT.delete_run(run_id)
+        _cleanup_upload()
         return f"Unable to store model {file_name}: {e}"
 
 
