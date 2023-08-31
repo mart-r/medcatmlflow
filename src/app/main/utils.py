@@ -144,13 +144,6 @@ def get_all_trees(nodes: Iterator[Node],
     return trees
 
 
-class DuplciateUploadException(ValueError):
-
-    def __init__(self, msg) -> None:
-        super().__init__(msg)
-        self.msg = msg
-
-
 def setup_logging(logger: logging.Logger) -> None:
     logger.setLevel(LOG_LEVEL)
 

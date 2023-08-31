@@ -109,49 +109,8 @@ def _get_all_cdbs() -> list[dict]:
 
 
 @expire_cache_after(60)  # expire every minute
-def _get_cdb(cdb_id) -> tuple[str, Optional[str]]:
-    cdbs = _get_all_cdbs()
-    # e.g:
-    # [
-    #   {'id': 5, 'name': 'snomed_cdb',
-    #    'cdb_file': 'http://10.211.114.213/media/snomed-cdb.dat',
-    #    'use_for_training': True},
-    #   {'id': 6, 'name': 'umls_cdb',
-    #    'cdb_file': 'http://10.211.114.213/media/cdb-medmen-v1.dat',
-    #    'use_for_training': True}
-    # ]
-    for saved_cdb in cdbs:
-        cur_id = saved_cdb["id"]
-        if cdb_id == cur_id:
-            cdb_file = saved_cdb["cdb_file"]
-            return f"{saved_cdb['name']} (ID: {cdb_id})", cdb_file
-    return "Unknown", None
-
-
-@expire_cache_after(60)  # expire every minute
 def _get_all_datasets() -> list[dict]:
     return _get_from_endpoint("datasets/")
-
-
-@expire_cache_after(60)  # expire every minute
-def _get_dataset(dataset_id) -> str:
-    datasets = _get_all_datasets()
-    # e.g:
-    # [
-    #   {'id': 2, 'name': 'Example Dataset',
-    #    'original_file': 'http://10.211.114.213/media/Example_Dataset.csv',
-    #    'create_time': '2023-06-14T22:46:38.746998Z',
-    #    'description': 'Example clinical text ...'},
-    #   {'id': 3, 'name': 'Example Dataset',
-    #    'original_file': 'http://10.211.114.213/media/Example_Dataset_cp.csv',
-    #    'create_time': '2023-06-14T22:47:08.817644Z',
-    #    'description': 'Example clinical text ...'}
-    # ]
-    for saved_ds in datasets:
-        cur_id = saved_ds["id"]
-        if dataset_id == cur_id:
-            return f"{saved_ds['name']} (ID: {dataset_id})"
-    return "Unknown"
 
 
 # TODO - instead of caching every time, save this somewhere
