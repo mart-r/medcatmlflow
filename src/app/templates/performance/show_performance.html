@@ -16,10 +16,10 @@
 
     <div id="modelDatasetOptions" style="display: none;">
         <h2>Select Models:</h2>
-        {% for model_cat, model_name, model_file in available_models %}
-            <label class="modelOption" data-category="{{ model_cat }}">
-                <input type="checkbox" name="selected_models" value="{{ model_file }}">
-                {{ model_name }}
+        {% for model_dict in available_models %}
+            <label class="modelOption" data-category="{{ model_dict.category }}">
+                <input type="checkbox" name="selected_models" value="{{ model_dict.model_file_name }}">
+                {{ model_dict.model_file_name }}
             </label><br>
         {% endfor %}
 

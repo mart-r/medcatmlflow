@@ -4,7 +4,7 @@ from flask import redirect, url_for
 import os
 
 from ..modelmanage.mlflow_integration import (
-    get_all_experiment_names, get_all_model_cat_descr_and_files,
+    get_all_experiment_names, get_all_model_metadata,
     get_model_descr_from_file
 )
 from ..medcat_linkage.medcat_integration import get_performance
@@ -51,7 +51,7 @@ def upload_dataset():
 
 @perf_bp.route('/show_performance', methods=['GET'])
 def show_performance():
-    available_models = get_all_model_cat_descr_and_files()
+    available_models = [md.as_dict() for md in get_all_model_metadata()]
     available_datasets = get_test_datasets()
     available_categories = get_all_experiment_names()
     return render_template("performance/show_performance.html",
