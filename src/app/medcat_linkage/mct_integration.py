@@ -92,6 +92,11 @@ def _get_from_endpoint(endpoint: str) -> list[dict]:
         logger.warn("Issue while loading from endpoints %s data:",
                     endpoint, exc_info=e)
         return []
+    except requests.exceptions.ConnectionError as e:
+        logger.error("Issue getting token - "
+                     "did you set up MedCATtrainer URL "
+                     "(MCT_BASE_URL) correctly?", exc_info=e)
+        return []
 
     logger.debug("Querying MCT endpoint: %s", endpoint)
 
