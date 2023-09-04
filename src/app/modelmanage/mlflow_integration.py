@@ -313,12 +313,5 @@ def get_model_from_file_name(model_file: str) -> Optional[ModelMetaData]:
     return None
 
 
-def get_model_descr_from_file(model_file: str) -> Optional[str]:
-    model = get_model_from_file_name(model_file)
-    if model:
-        return model.description
-    return None
-
-
 def get_model_descr_from_version(version: str) -> str:
     return get_model_from_version(version).description
