@@ -290,7 +290,7 @@ def get_all_trees_with_links(
             data[version] = (versions, saved_meta.category)
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter
-    return get_all_trees(nodes, _get_hist_link, get_model_descr_from_version)
+    return get_all_trees(nodes, _get_hist_link, get_model_name_from_version)
 
 
 def get_existing_hash2mctid() -> dict:
@@ -313,5 +313,8 @@ def get_model_from_file_name(model_file: str) -> Optional[ModelMetaData]:
     return None
 
 
-def get_model_descr_from_version(version: str) -> str:
-    return get_model_from_version(version).description
+def get_model_name_from_version(version: str) -> str:
+    model = get_model_from_version(version)
+    if not model:
+        return version
+    return model.name
