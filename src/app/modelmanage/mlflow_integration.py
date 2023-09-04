@@ -57,21 +57,30 @@ def _get_experiment_id(experiment_name: str) -> str:
     return MLFLOW_CLIENT.get_experiment_by_name(experiment_name).experiment_id
 
 
-def _perform_upload(file_path: str, model_filename: str,
+def _mlflow_pre_meta(experiment_name: str, file_path: str,
+                     model_description: str) -> str:
+    experiment_id = _get_experiment_id(experiment_name)
+    run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
+    run_id = run.info.run_id
+    MLFLOW_CLIENT.log_artifact(run_id, file_path)
+    MLFLOW_CLIENT.log_param(run_id, "model_description", model_description)
+    return run_id
+
+
+def _perform_upload(file_path: str, model_name: str,
                     model_description: str, category: str, run_id: str):
-    # db stuff
-    meta = create_meta(file_path, model_filename,
+    meta = create_meta(file_path, model_name=model_name,
                        description=model_description,
                        category=category,
                        run_id=run_id,
                        hash2mct_id=get_existing_hash2mctid())
-    MLFLOW_CLIENT.create_registered_model(model_filename,
+    MLFLOW_CLIENT.create_registered_model(model_name,
                                           tags=meta.as_dict(),
                                           description=model_description)
     # Get the artifact URI for the logged file
     artifact_uri = "runs:/{}/{}".format(run_id, file_path)
     # Create a model version associated with the registered model and file
-    MLFLOW_CLIENT.create_model_version(model_filename, artifact_uri)
+    MLFLOW_CLIENT.create_model_version(model_name, artifact_uri)
 
 
 def _cleanup_upload(file_path: str, run_id: str):
@@ -98,25 +107,18 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
     if os.path.exists(file_path) and not overwrite:
         return f"File already exists: {file_name}"
 
-    experiment_id = _get_experiment_id(experiment_name)
-
-    # save
+    # save file
     file_saver(file_path)
 
-    run = MLFLOW_CLIENT.create_run(experiment_id=experiment_id)
-    run_id = run.info.run_id
-    MLFLOW_CLIENT.log_artifact(run_id, file_path)
-    MLFLOW_CLIENT.log_param(run_id, "model_description", model_description)
-
-    model_filename = file_name
+    run_id = _mlflow_pre_meta(experiment_name, file_path, model_description)
 
     try:
-        _perform_upload(file_path, model_filename, model_description,
+        _perform_upload(file_path, file_name, model_description,
                         experiment_name, run_id)
     except Exception as e:
         logger.error("Unable to store model %s", file_name,
                      exc_info=e)
-        _cleanup_upload()
+        _cleanup_upload(file_path, run_id)
         return f"Unable to store model {file_name}: {e}"
 
 
@@ -254,7 +256,8 @@ def _recalc_model_metadata(model: RegisteredModel) -> None:
                        # if no category saved, we can't re-create
                        category=model.tags['category'],
                        run_id=run_id,
-                       hash2mct_id={cdb_hash: mct_cdb_id})
+                       hash2mct_id={cdb_hash: mct_cdb_id},
+                       existing_id=model.tags.get("id", None))
     _update_model_meta(model, meta)
 
 

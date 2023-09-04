@@ -1,5 +1,7 @@
 import copy
 import logging
+import os
+from uuid import uuid4
 
 from dataclasses import dataclass, field, fields
 from typing import Optional
@@ -14,32 +16,26 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelMetaData:
-    category: str
-    run_id: str
-    version: str
+    # stuff to identify model and/or its metadata
+    id: str
+    name: str
+    # stuff that describes a model
     description: str
+    category: str
+    version: str
     version_history: list[str]
-    model_file_name: str
-    performance: dict
-    changed_parts: list[str]
+    # tertiary descriptors
     cdb_hash: str
     stats: dict
+    performance: dict
+    changed_parts: list[str]
+    # stuff that describes mlflow things
+    model_file_name: str
+    run_id: str
     mct_cdb_id: Optional[str] = field(default=None)
 
     def as_dict(self) -> dict:
-        return {
-            "category": self.category,
-            "run_id": self.run_id,
-            "version": self.version,
-            "description": self.description,
-            "version_history": self.version_history,
-            "model_file_name": self.model_file_name,
-            "performance": self.performance,
-            "changed_parts": self.changed_parts,
-            "cdb_hash": self.cdb_hash,
-            "stats": self.stats,
-            "mct_cdb_id": self.mct_cdb_id,
-        }
+        return dict((key, getattr(self, key)) for key in self.get_keys())
 
     @classmethod
     def get_keys(cls) -> set[str]:
@@ -51,17 +47,24 @@ class ModelMetaData:
         kwargs = {}
         for key in cls.get_keys():
             kwargs[key] = model.tags[key]
-        kwargs['description'] = model.description
-        kwargs['run_id'] = run_id
+        kwargs["run_id"] = run_id
         return cls(**kwargs)
 
 
-def create_meta(file_path: str,
-                model_name: str,
-                description: str,
-                category: str,
-                run_id: str,
-                hash2mct_id: dict) -> ModelMetaData:
+def _generate_new_model_id():
+    return str(uuid4())
+
+
+def create_meta(
+    file_path: str,
+    model_name: str,
+    description: str,
+    category: str,
+    run_id: str,
+    hash2mct_id: dict,
+    existing_id: Optional[str] = None
+) -> ModelMetaData:
+    model_file_name = os.path.basename(file_path)
     cat = load_CAT(file_path)
     version = cat.config.version.id
     version_history = ",".join(cat.config.version.history)
@@ -79,16 +82,24 @@ def create_meta(file_path: str,
         logger.debug("Setting MCT CDB hash for '%s' to '%s' "
                      "as read from the CDB", cdb_hash, mct_cdb_id)
     stats = cat.cdb.make_stats()
+    if existing_id:
+        model_id = existing_id
+        logger.info("Using existing UUID of '%s' - "
+                    "hopefully during recalculation of metadata", model_id)
+    else:
+        model_id = _generate_new_model_id()
     return ModelMetaData(
-        category=category,
-        run_id=run_id,
-        model_file_name=model_name,
-        version=version,
+        id=model_id,
+        name=model_name,
         description=description,
+        category=category,
+        version=version,
         version_history=version_history,
-        performance=performance,
-        changed_parts=changed_parts,
         cdb_hash=cdb_hash,
         stats=stats,
+        performance=performance,
+        changed_parts=changed_parts,
+        model_file_name=model_file_name,
+        run_id=run_id,
         mct_cdb_id=mct_cdb_id,
     )
