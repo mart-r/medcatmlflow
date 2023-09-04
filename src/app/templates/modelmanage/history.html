@@ -12,12 +12,12 @@
         </tr>
     </thead>
     <tbody>
-        {% for version, filename in history %}
+        {% for version, meta in history %}
             <tr>
                 <td>{{ version }}</td>
                 <td>
-                    {% if filename %}
-                        <a href="{{ url_for('modelmanage.show_file_info', filename=filename) }}">Info</a>
+                    {% if meta %}
+                        <a href="{{ url_for('modelmanage.show_file_info', file_id=meta.id) }}">Info</a>
                     {% else %}
                         N/A
                     {% endif %}

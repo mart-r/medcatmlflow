@@ -48,6 +48,18 @@ class ModelMetaData:
         for key in cls.get_keys():
             kwargs[key] = model.tags[key]
         kwargs["run_id"] = run_id
+        # fix all non-string values
+        # TODO - do this better
+        if ('performance' in kwargs
+                and not isinstance(kwargs['performance'], dict)):
+            # TODO - make the below better
+            kwargs["performance"] = eval(kwargs["performance"])
+        if ('stats' in kwargs
+                and not isinstance(kwargs['stats'], dict)):
+            # TODO - make the below better
+            kwargs["stats"] = eval(kwargs["stats"])
+        # str -> list
+        kwargs["version_history"] = eval(kwargs["version_history"])
         return cls(**kwargs)
 
 
@@ -67,7 +79,7 @@ def create_meta(
     model_file_name = os.path.basename(file_path)
     cat = load_CAT(file_path)
     version = cat.config.version.id
-    version_history = ",".join(cat.config.version.history)
+    version_history = cat.config.version.history.copy()
     # make sure it's a deep copy
     performance = copy.deepcopy(cat.config.version.performance)
     # in case something gets modified - nothing right now

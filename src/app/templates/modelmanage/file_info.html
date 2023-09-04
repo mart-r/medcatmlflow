@@ -5,10 +5,10 @@
 {% block content %}
 <h1>File Information</h1>
 
-<a href="{{ url_for('modelmanage.download_file', filename=info['model_file_name']) }}" download>
+<a href="{{ url_for('modelmanage.download_file', file_id=info['id']) }}" download>
     <button>Download File</button>
 </a>
-<a href="{{ url_for('modelmanage.recalculate_metadata', filename=info['model_file_name']) }}">
+<a href="{{ url_for('modelmanage.recalculate_metadata', file_id=info['id']) }}">
     <button>Recalculate Metadata</button>
 </a>
 

@@ -4,10 +4,11 @@ from flask import redirect, url_for
 import os
 
 from .mlflow_integration import (
-    attempt_upload, get_files_with_info, delete_mlflow_file,
-    get_info, get_history, get_all_experiment_names, recalc_model_metedata,
+    attempt_upload, get_all_models_dict, delete_mlflow_file,
+    get_history, get_all_experiment_names, recalc_model_metedata,
     get_all_trees_with_links, has_experiment, create_mlflow_experiment,
-    delete_experiment, get_all_experiments
+    delete_experiment, get_all_experiments, get_model_from_id,
+    get_mlflow_from_id
 )
 
 from ..main.envs import STORAGE_PATH
@@ -25,6 +26,7 @@ def upload_file():
                                 file.save,
                                 request.form.get("experiment"),
                                 request.form.get("model_name"),
+                                request.form.get("model_description"),
                                 request.form.get("overwrite") == "1")
         if issues:
             return issues
@@ -35,52 +37,48 @@ def upload_file():
                                experiment_names=experiment_names)
 
 
-# Endpoint to browse and download files along with custom information
 @models_bp.route("/files")
 def browse_files():
-    files_with_info = get_files_with_info()
+    files_with_info = get_all_models_dict()
     return render_template("modelmanage/browse_files.html",
                            files=files_with_info)
 
 
 @models_bp.route("/delete_file", methods=["POST"])
 def delete_file():
-    filename = request.form.get("filename")
+    filename = request.form.get("file_id")
     if not filename:
-        return jsonify({"error": "Filename not provided"}), 400
+        return jsonify({"error": "File ID not provided"}), 400
 
     delete_mlflow_file(filename)
     return jsonify({"message": "File deleted successfully"}), 200
 
 
-# Endpoint for info for specific file
-@models_bp.route("/info/<filename>")
-def show_file_info(filename):
-    file_path = os.path.join(STORAGE_PATH, filename)
+@models_bp.route("/info/<file_id>")
+def show_file_info(file_id):
+    model = get_model_from_id(file_id)
     return render_template("modelmanage/file_info.html",
-                           info=get_info(file_path))
+                           info=model.as_dict())
 
 
-# Endpoint for recalculation of metadata
-@models_bp.route("/recalculate_metadata/<filename>")
-def recalculate_metadata(filename):
-    file_path = os.path.join(STORAGE_PATH, filename)
-    recalc_model_metedata(file_path)
-    # Redirect to the file information page with the updated metadata
-    return redirect(url_for("modelmanage.show_file_info", filename=filename))
+@models_bp.route("/recalculate_metadata/<file_id>")
+def recalculate_metadata(file_id):
+    model = get_mlflow_from_id(file_id)
+    recalc_model_metedata(model)
+    return redirect(url_for("modelmanage.show_file_info", file_id=file_id))
 
 
-# Endpoint for history of a specific file
-@models_bp.route("/history/<filename>")
-def show_file_history(filename):
-    file_path = os.path.join(STORAGE_PATH, filename)
+@models_bp.route("/history/<file_id>")
+def show_file_history(file_id):
+    meta = get_model_from_id(file_id)
     return render_template("modelmanage/history.html",
-                           history=get_history(file_path))
+                           history=get_history(meta))
 
 
-@models_bp.route("/download/<filename>")
-def download_file(filename):
-    full_path = os.path.join(STORAGE_PATH, filename)
+@models_bp.route("/download/<file_id>")
+def download_file(file_id):
+    model = get_model_from_id(file_id)
+    full_path = os.path.join(STORAGE_PATH, model.model_file_name)
     return send_file(full_path, as_attachment=True)
 
 

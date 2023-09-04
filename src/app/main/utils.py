@@ -204,3 +204,11 @@ def expire_cache_after(seconds):
 
         return wrapper
     return decorator
+
+
+class NoSuchModelExcepton(ValueError):
+
+    def __init__(self, key: str, value: str) -> None:
+        super().__init__(f"Could not find a model  where '{key}' = '{value}'")
+        self.key = key
+        self.value = value

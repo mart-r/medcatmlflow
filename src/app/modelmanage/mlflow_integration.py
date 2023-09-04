@@ -10,7 +10,7 @@ from mlflow.entities import Experiment
 from mlflow.entities.model_registry import RegisteredModel
 
 from ..medcat_linkage.metadata import ModelMetaData, create_meta
-from ..main.utils import build_nodes, get_all_trees
+from ..main.utils import build_nodes, get_all_trees, NoSuchModelExcepton
 
 from ..main.envs import STORAGE_PATH
 
@@ -96,6 +96,7 @@ def _cleanup_upload(file_path: str, run_id: str):
 
 def attempt_upload(file_name: str, file_saver: Callable[[str], None],
                    experiment_name: str,
+                   model_name: str,
                    model_description: str,
                    overwrite: bool):
     if not has_experiment(experiment_name):
@@ -113,7 +114,7 @@ def attempt_upload(file_name: str, file_saver: Callable[[str], None],
     run_id = _mlflow_pre_meta(experiment_name, file_path, model_description)
 
     try:
-        _perform_upload(file_path, file_name, model_description,
+        _perform_upload(file_path, model_name, model_description,
                         experiment_name, run_id)
     except Exception as e:
         logger.error("Unable to store model %s", file_name,
@@ -136,19 +137,20 @@ def _get_run_id(model: RegisteredModel,
     return run_id_pattern.match(source).group(1)
 
 
-def get_files_with_info() -> list[dict]:
+def get_all_models_dict() -> list[dict]:
     # Print the list of models and their information
     files_with_info = []
     for model in get_all_model_metadata():
-        cur_info = {
-            "name": model.model_file_name,
-            "version": model.version,
-            "description": model.description,
-            "experiment": model.category,
-            "run_id": model.run_id,
-        }
-        files_with_info.append(cur_info)
+        files_with_info.append(model.as_dict())
     return files_with_info
+
+
+def get_model_from_id(model_id: str) -> ModelMetaData:
+    return _get_meta_model_from_tag(model_id, _tag_key='id')
+
+
+def get_model_from_version(version: str) -> ModelMetaData:
+    return _get_meta_model_from_tag(version, _tag_key='version')
 
 
 def delete_mlflow_file(filename: str) -> None:
@@ -174,53 +176,44 @@ def delete_mlflow_file(filename: str) -> None:
         MLFLOW_CLIENT.delete_registered_model(model_name)
 
 
-def get_info(file_path: str) -> dict:
-    basename = os.path.basename(file_path)
-    model = MLFLOW_CLIENT.get_registered_model(basename)
-    if model:
-        metadata = get_meta_model(model)
-        cur_info = metadata.as_dict()
-        if ('performance' in cur_info
-                and not isinstance(cur_info['performance'], dict)):
-            # TODO - make the below better
-            cur_info["performance"] = eval(cur_info["performance"])
-        if ('stats' in cur_info
-                and not isinstance(cur_info['stats'], dict)):
-            # TODO - make the below better
-            cur_info["stats"] = eval(cur_info["stats"])
-        cur_info['Internal ID'] = _get_run_id(model)
-    else:
-        cur_info = {"ISSUES": "Metadata not saved",
-                    "file path": file_path,
-                    "basename": basename
-                    }
-    return cur_info
-
-
-def recalc_model_metedata(file_path: str) -> None:
+def recalc_model_metedata(model: RegisteredModel) -> None:
+    file_path = os.path.join(STORAGE_PATH, model.tags["model_file_name"])
     basename = os.path.basename(file_path)
     model = MLFLOW_CLIENT.get_registered_model(basename)
     _recalc_model_metadata(model)
 
 
-def _get_file_name(version: str, _tag_key: str = 'version') -> str:
-    all_models = MLFLOW_CLIENT.search_registered_models()
-    model: Optional[RegisteredModel] = None
-    for found_model in all_models:
-        if (_tag_key in found_model.tags and
-                found_model.tags[_tag_key] == version):
-            model = found_model
-            break
+def _get_mlflow_from_tag(value: str,
+                         _tag_key: str = 'version') -> RegisteredModel:
+    models = MLFLOW_CLIENT.search_registered_models(
+        f"tag.{_tag_key} = '{value}'")
+    if len(models) == 0:
+        raise NoSuchModelExcepton(_tag_key, value)
+    if len(models) > 1:
+        logger.warning("Found more than one model for '%s': '%s' "
+                       "(%d) while - returning the first of all the "
+                       "models found", _tag_key, value, len(models))
+    return models[0]
+
+
+def get_mlflow_from_id(model_id: str) -> RegisteredModel:
+    return _get_mlflow_from_tag(model_id, 'id')
+
+
+def _get_meta_model_from_tag(value: str,
+                             _tag_key: str) -> Optional[ModelMetaData]:
+    try:
+        model = _get_mlflow_from_tag(value, _tag_key=_tag_key)
+    except NoSuchModelExcepton:
+        return None
+    return ModelMetaData.from_mlflow_model(model, run_id=model.tags['run_id'])
+
+
+def _get_hist_link(version: str) -> Optional[str]:
+    model = get_model_from_version(version)
     if model:
-        return model.tags['model_file_name']
+        return f"/info/{model.id}"
     return None
-
-
-def _get_hist_link(version: str, _tag_key: str = 'version') -> str:
-    file_name = _get_file_name(version, _tag_key)
-    if file_name:
-        return f"/info/{file_name}"
-    return file_name  # None
 
 
 def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
@@ -273,26 +266,17 @@ def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     return meta
 
 
-def get_history(file_path: str) -> list:
-    basename = os.path.basename(file_path)
-    model = MLFLOW_CLIENT.get_registered_model(basename)
-    if model:
-        meta = get_meta_model(model)
-        cur_info = meta.as_dict()
-        versions = cur_info["version_history"].split(",")
-        history = []
-        for version in versions:
-            if not version:
-                continue
-            cur_name = _get_file_name(version)
-            history.append((version, cur_name))
-        return history
-    else:
-        return [("ISSUES", "Metadata not saved"),
-                # ("looked for", model_version),
-                ("file path", file_path),
-                ("basename", basename),
-                ("SAVED META", str(model))]
+def get_history(meta_in: ModelMetaData) -> list[tuple[str, Optional[dict]]]:
+    versions = meta_in.version_history
+    history = []
+    for version in versions:
+        if not version:
+            continue
+        _get_meta_model_from_tag
+        meta = get_model_from_version(version)
+        meta_dict = meta.as_dict() if meta else None
+        history.append((version, meta_dict))
+    return history
 
 
 def get_all_trees_with_links(
@@ -302,8 +286,7 @@ def get_all_trees_with_links(
         if saved_meta:
             version = saved_meta.version
             # remove empty versions
-            versions = [ver for ver in saved_meta.version_history.split(",")
-                        if ver]
+            versions = [ver for ver in saved_meta.version_history if ver]
             data[version] = (versions, saved_meta.category)
     nodes = build_nodes(data).values()
     # Pass the _get_hist_link function as the model_link_func parameter
@@ -338,7 +321,4 @@ def get_model_descr_from_file(model_file: str) -> Optional[str]:
 
 
 def get_model_descr_from_version(version: str) -> str:
-    file_name = _get_file_name(version)
-    if file_name is None:
-        return version  # no model -> no description
-    return get_model_descr_from_file(file_name)
+    return get_model_from_version(version).description
