@@ -8,12 +8,6 @@ if [ ! -d "$MEDCATMLFLOW_MODEL_STORAGE_PATH" ]; then
   mkdir -p "$MEDCATMLFLOW_MODEL_STORAGE_PATH"
 fi
 
-# Check if the directory for test datasets exists
-if [ ! -d "$MEDCATMLFLOW_MODEL_STORAGE_PATH/test_datasets" ]; then
-  # If not, create the directory
-  mkdir -p "$MEDCATMLFLOW_MODEL_STORAGE_PATH/test_datasets"
-fi
-
 mkdir -p $MEDCATMLFLOW_LOGS_PATH
 
 # Run your application
