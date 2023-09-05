@@ -23,7 +23,11 @@
         {% for key, value in info.items() %}
             {% if key != 'performance' and key != 'stats' %}
                 <tr>
-                    <td>{{ key }}</td>
+                    {% if key == 'version_history' %}
+                        <td><a href="{{ url_for('modelmanage.show_file_history', file_id=info.id) }}">{{ key }}</a></td>
+                    {% else %}
+                        <td>{{ key }}</td>
+                    {% endif %}
                     <td>{{ value }}</td>
                 </tr>
             {% endif %}
