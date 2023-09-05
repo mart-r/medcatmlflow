@@ -38,8 +38,8 @@ class ModelMetaData:
         return dict((key, getattr(self, key)) for key in self.get_keys())
 
     @classmethod
-    def get_keys(cls) -> set[str]:
-        return set(field.name for field in fields(cls))
+    def get_keys(cls) -> list[str]:
+        return [field.name for field in fields(cls)]
 
     @classmethod
     def from_mlflow_model(cls, model: RegisteredModel,
