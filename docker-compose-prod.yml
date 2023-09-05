@@ -1,9 +1,8 @@
 version: '3'
 services:
   medcatmlflow:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    container_name: medcatmlflow
+    hostname: medcatmlflow
     image: martratas/medcatmlflow:0.1.1
     ports:
       - 8000:5000
