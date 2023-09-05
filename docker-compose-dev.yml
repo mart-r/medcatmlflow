@@ -1,0 +1,32 @@
+version: '3'
+services:
+  medcatmlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:5000
+    volumes:
+      - medcattrainer_api-media:/app/media-api
+      - medcattrainer_api-db:/app/db
+    environment:
+      - MEDCATMLFLOW_MODEL_STORAGE_PATH=/app/db/medcatmlflow/models/
+      - MEDCATMLFLOW_DB_URI=sqlite:////app/db/medcatmlflow/mlflow.db
+      - MEDCATMLFLOW_LOGS_PATH=/app/db/medcatmlflow/logs/
+      - MEDCATMLFLOW_LOG_LEVEL=DEBUG
+      - MEDCATMLFLOW_LOG_BACKUP_DAYS=30
+      - MCT_BASE_URL=http://10.211.114.213:8001/api/
+    env_file:  # define user-specified information (e.g credentials)
+      - .env
+    networks:
+      - medcattrainer_default
+
+networks:
+  medcattrainer_default:
+    external: true
+
+volumes:
+  medcattrainer_api-media:
+    external: True
+  medcattrainer_api-db:
+    external: True
