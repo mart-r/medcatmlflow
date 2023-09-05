@@ -145,11 +145,11 @@ def get_all_models_dict() -> list[dict]:
     return files_with_info
 
 
-def get_model_from_id(model_id: str) -> ModelMetaData:
+def get_model_from_id(model_id: str) -> Optional[ModelMetaData]:
     return _get_meta_model_from_tag(model_id, _tag_key='id')
 
 
-def get_model_from_version(version: str) -> ModelMetaData:
+def get_model_from_version(version: str) -> Optional[ModelMetaData]:
     return _get_meta_model_from_tag(version, _tag_key='version')
 
 
