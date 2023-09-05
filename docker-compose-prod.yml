@@ -2,10 +2,10 @@ version: '3'
 services:
   medcatmlflow:
     build:
-    context: .
-    dockerfile: Dockerfile
-    args:
-      IMAGE_NAME: martratas/medcatmlflow:0.1.1
+      context: .
+      dockerfile: Dockerfile
+      args:
+        IMAGE_NAME: martratas/medcatmlflow:0.1.1
     ports:
       - 8000:5000
     volumes:
