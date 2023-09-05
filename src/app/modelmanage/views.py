@@ -72,7 +72,8 @@ def recalculate_metadata(file_id):
 def show_file_history(file_id):
     meta = get_model_from_id(file_id)
     return render_template("modelmanage/history.html",
-                           history=get_history(meta), name=meta.name)
+                           history=get_history(meta), name=meta.name,
+                           id=meta.id)
 
 
 @models_bp.route("/download/<file_id>")

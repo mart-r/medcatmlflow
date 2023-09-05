@@ -3,7 +3,7 @@
 {% block title %}File History{% endblock %}
 
 {% block content %}
-<h1>Model History for: {{ name }}</h1>
+<h1>Model History for: <a href="{{ url_for('modelmanage.show_file_info', file_id=id) }}">{{ name }}</a></h1>
 <table>
     <thead>
         <tr>
