@@ -72,7 +72,7 @@ def recalculate_metadata(file_id):
 def show_file_history(file_id):
     meta = get_model_from_id(file_id)
     return render_template("modelmanage/history.html",
-                           history=get_history(meta))
+                           history=get_history(meta), name=meta.name)
 
 
 @models_bp.route("/download/<file_id>")
@@ -85,6 +85,7 @@ def download_file(file_id):
 @models_bp.route("/all_trees")
 def all_trees():
     all_trees_with_links = get_all_trees_with_links()
+    all_trees_with_links = sorted(all_trees_with_links, key=lambda li: li[1])
     return render_template("modelmanage/all_trees.html",
                            all_trees_with_links=all_trees_with_links)
 
