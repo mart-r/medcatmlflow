@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: martratas/medcatmlflow:0.1.0
     ports:
       - 8000:5000
     volumes:
