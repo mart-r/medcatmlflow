@@ -23,7 +23,7 @@ The steps are as follows:
 1. Get the `docker-compose-prod.yml`
   - Either by cloning `git clone -b nearProduction --single-branch git@github.com:mart-r/medcatmlflow.git/`
   - Or by copying the contents of the file (i.e if github is not available)
-2. Setup configs
+2. \[Optional\] Setup configs
   - \[Optional\] Change some of the environmental variables in `docker-compose-prod.yml` to suit your needs / environment
     - You can change where the models (`MEDCATMLFLOW_MODEL_STORAGE_PATH`) or the database (`MEDCATMLFLOW_DB_URI`) are saved
     - You can change the log path (`MEDCATMLFLOW_LOGS_PATH`) and level (`MEDCATMLFLOW_LOGS_LEVEL`)
