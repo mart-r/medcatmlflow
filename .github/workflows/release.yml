@@ -3,6 +3,7 @@ name: release-build
 on:
   push:
     tags: [ 'v*.*.*' ]
+    branches: ['production']
 
 
 jobs:
