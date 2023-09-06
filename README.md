@@ -9,19 +9,31 @@ It uses regression tooling within `medcat` to generate metrics.
 
 We've packaged the project into a docker container.
 
-All the user needs to do is run
+## Running in development mode
 ```
-docker-compose up
+docker-compose -f docker-compose-dev.yml up
 ```
 Or with the `-d` option to run it in detached mode.
+
+## Running in production mode
+In production, we want to use a specific pre-built image.
+That's why we use the `docker-compose-prod.yml` instead.
+
+The steps are as follows:
+1. Get the `docker-compose-prod.yml`
+  - Either by cloning `git clone -b nearProduction --single-branch git@github.com:mart-r/medcatmlflow.git/`
+  - Or by copying the contents of the file (i.e if github is not available)
+2. Setup configs
+  - \[Optional\] Change some of the environmental variables in `docker-compose-prod.yml` to suit your needs / environment
+    - You can change where the models (`MEDCATMLFLOW_MODEL_STORAGE_PATH`) or the database (`MEDCATMLFLOW_DB_URI`) are saved
+    - You can change the log path (`MEDCATMLFLOW_LOGS_PATH`) and level (`MEDCATMLFLOW_LOGS_LEVEL`)
+    - You can change the MedCATtrainer URL (`MCT_BASE_URL`)
+  - \[Optional\] You can specify MedCATtrainer login details in `.env`
+3. Run the container
+  - `docker-compose -f docker-compose-prod.yml up -d`
 
 
 # How to use _medcatmlflow_
 
-
-## Prerequisites
-
-In order to run some regression tests you will need to have
-- A MedCAT model (version 1.3+ should work)
-- At least one regression test suite (multiple recommended)
-  - Take a look at the regression test tutorial ([here](https://htmlpreview.github.io/?https://github.com/CogStack/MedCATtutorials/blob/main/notebooks/specialised/Comparing_Models_with_RegressionSuite.html)) for specifics on how to generate these
+When the service is running, you just need to go to [http://localhost:8000/](http://localhost:8000/) (by default).
+You can then start uploading models and looking at the model hierarchies.
