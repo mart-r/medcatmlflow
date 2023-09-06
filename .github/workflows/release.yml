@@ -35,4 +35,4 @@ jobs:
           IMAGE_TAG: ${{ env.RELEASE_VERSION }}
         run: |
           docker push martratas/medcatmlflow:$IMAGE_TAG
-          docker push martratas/medcatmlflow:ubuntu-latest
+          docker push martratas/medcatmlflow:latest
