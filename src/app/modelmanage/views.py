@@ -30,7 +30,7 @@ def upload_file():
                                 request.form.get("overwrite") == "1")
         if issues:
             return issues
-        return redirect(url_for("files"))
+        return redirect(url_for("modelmanage.browse_files"))
     else:
         experiment_names = get_all_experiment_names()
         return render_template("modelmanage/upload.html",
@@ -51,7 +51,7 @@ def delete_file():
         return jsonify({"error": "File ID not provided"}), 400
 
     delete_mlflow_file(filename)
-    return redirect(url_for("files"))
+    return redirect(url_for("modelmanage.browse_files"))
 
 
 @models_bp.route("/info/<file_id>")
