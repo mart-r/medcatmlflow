@@ -5,12 +5,11 @@ services:
     ports:
       - 8000:5000
     volumes:
-      - medcattrainer_api-media:/app/media-api
-      - medcattrainer_api-db:/app/db
+      - medcatmlflow-db:/app/db
     environment:
       - MEDCATMLFLOW_MODEL_STORAGE_PATH=/app/db/medcatmlflow/models/
-      - MEDCATMLFLOW_DB_URI=sqlite:///mlflow.db
-      - MEDCATMLFLOW_LOGS_PATH=/app/logs/
+      - MEDCATMLFLOW_DB_URI=sqlite:////app/db/medcatmlflow/mlflow.db
+      - MEDCATMLFLOW_LOGS_PATH=/app/db/medcatmlflow/logs/
       - MEDCATMLFLOW_LOG_LEVEL=INFO
       - MEDCATMLFLOW_LOG_BACKUP_DAYS=30
       - MCT_BASE_URL=http://10.211.114.213:8001/api/
@@ -24,7 +23,4 @@ networks:
     external: true
 
 volumes:
-  medcattrainer_api-media:
-    external: true
-  medcattrainer_api-db:
-    external: true
+  medcatmlflow-db:

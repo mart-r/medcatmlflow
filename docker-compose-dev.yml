@@ -7,8 +7,7 @@ services:
     ports:
       - 8000:5000
     volumes:
-      - medcattrainer_api-media:/app/media-api
-      - medcattrainer_api-db:/app/db
+      - medcatmlflow-db:/app/db
     environment:
       - MEDCATMLFLOW_MODEL_STORAGE_PATH=/app/db/medcatmlflow/models/
       - MEDCATMLFLOW_DB_URI=sqlite:////app/db/medcatmlflow/mlflow.db
@@ -26,7 +25,4 @@ networks:
     external: true
 
 volumes:
-  medcattrainer_api-media:
-    external: True
-  medcattrainer_api-db:
-    external: True
+  medcatmlflow-db:
