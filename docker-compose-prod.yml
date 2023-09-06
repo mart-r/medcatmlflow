@@ -1,11 +1,7 @@
 version: '3'
 services:
   medcatmlflow:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        IMAGE_NAME: martratas/medcatmlflow:0.1.1
+    image: martratas/medcatmlflow:0.1.1
     ports:
       - 8000:5000
     volumes:
@@ -29,6 +25,6 @@ networks:
 
 volumes:
   medcattrainer_api-media:
-    external: True
+    external: true
   medcattrainer_api-db:
-    external: True
+    external: true
