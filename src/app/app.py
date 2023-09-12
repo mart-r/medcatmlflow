@@ -12,19 +12,23 @@ from .main.utils import setup_logging
 from .main.views import main_bp
 from .modelmanage.views import models_bp
 
-app = Flask(__name__)
-
 # setup logging for root logger
 logger = logging.getLogger()
 setup_logging(logger)
 
-# setup the database
-setup_db(app)
+try:
+    app = Flask(__name__)
+    app.debug = True
 
-# setup blueprints
+    # setup the database
+    setup_db(app)
 
-app.register_blueprint(main_bp)
-app.register_blueprint(models_bp)
+    # setup blueprints
+
+    app.register_blueprint(main_bp)
+    app.register_blueprint(models_bp)
+except Exception as e:
+    logger.error("Problem starting app", exc_info=e)
 
 
 if __name__ == "__main__":
