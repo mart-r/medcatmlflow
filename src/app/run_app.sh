@@ -12,5 +12,5 @@ mkdir -p $MEDCATMLFLOW_LOGS_PATH
 
 # Run your application
 cd src
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+python -m gunicorn -w 4 -b 0.0.0.0:5000 app:app
 # python -m flask --app app.app run --host "0.0.0.0" --without-threads
