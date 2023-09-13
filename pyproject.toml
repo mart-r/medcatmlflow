@@ -23,6 +23,7 @@ dependencies = [
     "Flask",
     "Flask-SQLAlchemy",
     "SQLAlchemy",
-    "anytree"
+    "anytree",
+    "gunicorn"
 ]
 version = "0.1.6"

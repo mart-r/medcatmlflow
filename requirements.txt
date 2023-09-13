@@ -6,3 +6,4 @@ SQLAlchemy
 Flask
 Flask-SQLAlchemy
 anytree
+gunicorn
