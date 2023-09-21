@@ -12,7 +12,7 @@ services:
       - MEDCATMLFLOW_LOGS_PATH=/app/db/medcatmlflow/logs/
       - MEDCATMLFLOW_LOG_LEVEL=INFO
       - MEDCATMLFLOW_LOG_BACKUP_DAYS=30
-      - MEDCAT_MLFLOW_TIMEOUT=
+      - MEDCATMLFLOW_GUNICORN_TIMEOUT=300
       - MCT_BASE_URL=http://10.211.114.213:8001/api/
     env_file:  # define user-specified information (e.g credentials)
       - .env
