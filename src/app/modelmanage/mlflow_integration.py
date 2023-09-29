@@ -48,6 +48,23 @@ def get_all_experiments() -> list[tuple[str, str]]:
             for exp in MLFLOW_CLIENT.search_experiments()]
 
 
+def get_experiment_by_name(name: str) -> dict[str, str]:
+    exp = MLFLOW_CLIENT.get_experiment_by_name(name)
+    return {"short_name": exp.name,
+            "description": exp.tags['description']}
+
+
+def update_experiment_description(name: str, new_description: str) -> None:
+    exp = MLFLOW_CLIENT.get_experiment_by_name(name)
+    old_descr = exp.tags['description']
+    if old_descr == new_description:
+        # do nothing
+        return
+    exp.tags['description'] = new_description
+    MLFLOW_CLIENT.set_experiment_tag(exp.experiment_id, 'description',
+                                     new_description)
+
+
 def delete_experiment(name: str) -> None:
     exp = MLFLOW_CLIENT.get_experiment_by_name(name)
     MLFLOW_CLIENT.delete_experiment(exp.experiment_id)
