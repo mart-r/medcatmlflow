@@ -5,7 +5,7 @@ import os
 
 from .mlflow_integration import (
     attempt_upload, get_all_models_dict, delete_mlflow_file,
-    get_history, get_all_experiment_names, recalc_model_metedata,
+    get_history, get_all_experiment_names, recalc_model_metadata,
     get_all_trees_with_links, has_experiment, create_mlflow_experiment,
     delete_experiment, get_all_experiments, get_model_from_id,
     get_mlflow_from_id, get_experiment_by_name, update_experiment_description,
@@ -82,7 +82,7 @@ def edit_model_info(file_id):
 @models_bp.route("/recalculate_metadata/<file_id>")
 def recalculate_metadata(file_id):
     model = get_mlflow_from_id(file_id)
-    recalc_model_metedata(model)
+    recalc_model_metadata(model)
     return redirect(url_for("modelmanage.show_file_info", file_id=file_id))
 
 

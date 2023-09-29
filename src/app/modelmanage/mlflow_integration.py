@@ -211,13 +211,6 @@ def delete_mlflow_file(filename: str) -> None:
         MLFLOW_CLIENT.delete_registered_model(model_name)
 
 
-def recalc_model_metedata(model: RegisteredModel) -> None:
-    file_path = os.path.join(STORAGE_PATH, model.tags["model_file_name"])
-    basename = os.path.basename(file_path)
-    model = MLFLOW_CLIENT.get_registered_model(basename)
-    _recalc_model_metadata(model)
-
-
 def _get_mlflow_from_tag(value: str,
                          _tag_key: str = 'version') -> RegisteredModel:
     models = MLFLOW_CLIENT.search_registered_models(
@@ -268,7 +261,7 @@ def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
     model.tags.update(meta.as_dict())
 
 
-def _recalc_model_metadata(model: RegisteredModel) -> None:
+def recalc_model_metadata(model: RegisteredModel) -> None:
     if 'cdb_hash' in model.tags:
         cdb_hash = model.tags['cdb_hash']
     else:
@@ -296,7 +289,7 @@ def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     except KeyError as e:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk"
                        " exception: %e", e)
-        _recalc_model_metadata(model)
+        recalc_model_metadata(model)
         meta = ModelMetaData.from_mlflow_model(model, run_id=run_id)
     return meta
 
