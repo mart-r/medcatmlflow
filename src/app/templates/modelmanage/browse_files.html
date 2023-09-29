@@ -38,6 +38,7 @@
                         <button type="submit">Delete</button>
                     </form>
                 </div>
+                <a href="{{ url_for('modelmanage.edit_model_info', file_id=file.id) }}">Edit Model Info</a>
             </div>
         </li>
     {% endfor %}

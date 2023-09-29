@@ -8,7 +8,8 @@ from .mlflow_integration import (
     get_history, get_all_experiment_names, recalc_model_metedata,
     get_all_trees_with_links, has_experiment, create_mlflow_experiment,
     delete_experiment, get_all_experiments, get_model_from_id,
-    get_mlflow_from_id, get_experiment_by_name, update_experiment_description
+    get_mlflow_from_id, get_experiment_by_name, update_experiment_description,
+    update_model_info
 )
 
 from ..main.envs import STORAGE_PATH
@@ -59,6 +60,23 @@ def show_file_info(file_id):
     model = get_model_from_id(file_id)
     return render_template("modelmanage/file_info.html",
                            info=model.as_dict())
+
+
+@models_bp.route('/edit_model_info/<file_id>', methods=['GET', 'POST'])
+def edit_model_info(file_id):
+    model = get_model_from_id(file_id)
+
+    if request.method == 'POST':
+        new_name = request.form['new_name']
+        new_description = request.form['new_description']
+
+        model = get_mlflow_from_id(file_id)
+        update_model_info(model, new_name, new_description)
+
+        # Redirect to the model information page after updating.
+        return redirect(url_for('modelmanage.show_file_info', file_id=file_id))
+
+    return render_template('modelmanage/edit_model_info.html', model=model)
 
 
 @models_bp.route("/recalculate_metadata/<file_id>")
