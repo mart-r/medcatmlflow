@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Result{% endblock %}
+
+{% block content %}
+<h1>Performance Result</h1>
+
+{% for model_id, perf in performance_results.items() %}
+    <h2>Model Name: {{ model_id }}</h2>
+    {% for ds_name, ds_perf in perf.items() %}
+        <p> {{ ds_name }}: {{ ds_perf }}</p>
+    {% endfor %}
+{% endfor %}
+
+{% endblock %}
