@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request
 from flask import redirect, url_for
 
+import logging
+
 import os
 
 from ..modelmanage.mlflow_integration import (
@@ -16,6 +18,9 @@ from ..main.envs import STORAGE_PATH
 
 
 perf_bp = Blueprint("performance", __name__)
+
+
+logger = logging.getLogger(__name__)
 
 
 @perf_bp.route("/manage_datasets", methods=["GET", "POST"])
@@ -70,11 +75,14 @@ def calculate_performance():
     selected_model_ids = request.form.getlist("selected_models")
     selected_dataset_ids = request.form.getlist("selected_datasets")
 
-    models = [
-        (get_model_from_id(model_id), os.path.join(STORAGE_PATH, model_id))
-        for model_id in selected_model_ids
-    ]
+    models = []
+    for model_id in selected_model_ids:
+        model = get_model_from_id(model_id)
+        file_path = os.path.join(STORAGE_PATH, model.model_file_name)
+        models.append((model.name, file_path))
 
+    logger.info("Getting performance of %d models over %d datasets",
+                len(models), len(selected_dataset_ids))
     performance_results = get_performance(models, selected_dataset_ids)
 
     return render_template(

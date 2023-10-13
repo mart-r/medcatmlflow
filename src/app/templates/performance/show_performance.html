@@ -18,7 +18,7 @@
         <h2>Select Models:</h2>
         {% for model_dict in available_models %}
             <label class="modelOption" data-category="{{ model_dict.category }}">
-                <input type="checkbox" name="selected_models" value="{{ model_dict.model_file_name }}">
+                <input type="checkbox" name="selected_models" value="{{ model_dict.id }}">
                 {{ model_dict.model_file_name }}
             </label><br>
         {% endfor %}
