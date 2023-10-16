@@ -13,6 +13,7 @@ from ..modelmanage.mlflow_integration import (
 from ..medcat_linkage.medcat_integration import get_performance
 from .datasets import get_test_datasets, upload_test_dataset
 from .datasets import delete_test_dataset
+from .imaging import get_buffers
 
 from ..main.envs import STORAGE_PATH
 
@@ -85,7 +86,10 @@ def calculate_performance():
                 len(models), len(selected_dataset_ids))
     performance_results = get_performance(models, selected_dataset_ids)
 
+    graph_buffers = get_buffers(performance_results)
+
     return render_template(
         "performance/performance_result.html",
-        performance_results=performance_results
+        performance_results=performance_results,
+        graph_paths=graph_buffers,
     )

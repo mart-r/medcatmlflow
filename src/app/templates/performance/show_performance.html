@@ -19,7 +19,7 @@
         {% for model_dict in available_models %}
             <label class="modelOption" data-category="{{ model_dict.category }}">
                 <input type="checkbox" name="selected_models" value="{{ model_dict.id }}">
-                {{ model_dict.model_file_name }}
+                {{ model_dict.name }}
             </label><br>
         {% endfor %}
 
