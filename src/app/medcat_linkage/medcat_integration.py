@@ -140,9 +140,9 @@ def get_performance(models: list[tuple[str, str]],
              cui_counts, examples) = cat._print_stats(data)
             file_basename = os.path.basename(file_name)
             per_model[file_basename] = {
-                "False positives": fps,
-                "False negatives": fns,
-                "True positives": tps,
+                "False positives": len(fps),
+                "False negatives": len(fns),
+                "True positives": len(tps),
                 "Precision for each CUI": cui_prec,
                 "Recall for each CUI": cui_rec,
                 "F1 for each CUI": cui_f1,
