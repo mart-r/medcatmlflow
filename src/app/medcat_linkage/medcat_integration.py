@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Iterator, Dict, TypedDict
 
 import logging
 
@@ -44,7 +44,7 @@ def _try_update_and_load(file_path: str, overwrite: bool = True) -> CAT:
     # move folder
     shutil.move(new_model, folder_path)
     # move zip
-    shutil.move(new_model + '.zip', zip_path)
+    shutil.move(new_model + ".zip", zip_path)
     return CAT.load_model_pack(zip_path)
 
 
@@ -96,8 +96,25 @@ def _iterate_datasets(dataset_files: list[str]) -> Iterator[tuple[str, dict]]:
         yield dsf, data
 
 
+PerformanceResult = TypedDict(
+    "PerformanceResult",
+    {
+        "False positives": int,
+        "False negatives": int,
+        "True positives": int,
+        "Precision for each CUI": dict[str, float],
+        "Recall for each CUI": dict[str, float],
+        "F1 for each CUI": dict[str, float],
+        "Counts for each CUI": dict[str, float],
+        "Examples for each of the fp, fn, tp": dict[str, float],
+    },
+)
+DatasetPerformanceResults = Dict[str, PerformanceResult]
+ModelPerformanceResults = Dict[str, DatasetPerformanceResults]
+
+
 def get_performance(models: list[tuple[str, str]],
-                    dataset_files: list[str]) -> dict:
+                    dataset_files: list[str]) -> ModelPerformanceResults:
     """Get the performance of models given the specified datasets.
 
     This method iterates over all models and all datasets.
@@ -124,11 +141,14 @@ def get_performance(models: list[tuple[str, str]],
     }
 
     Args:
-        models (list[tuple[str, str]]): _description_
-        dataset_files (list[str]): _description_
+        models (list[tuple[str, str]]):
+            The model names and corresponding file names
+        dataset_files (list[str]):
+            The list of dataset files
 
     Returns:
-        dict: _description_
+        ModelPerformanceResults:
+            The model's performance results
     """
     out = {}
     for model_name, model_file in models:
