@@ -70,6 +70,9 @@ def show_performance():
 def calculate_performance():
     selected_model_ids = request.form.getlist("selected_models")
     selected_dataset_ids = request.form.getlist("selected_datasets")
+    if not selected_model_ids or not selected_dataset_ids:
+        # TODO - add message about missing stuff
+        return show_performance()
 
     models = [get_model_from_id(model_id) for model_id in selected_model_ids]
 
