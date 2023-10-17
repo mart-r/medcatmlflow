@@ -22,3 +22,17 @@ class TestDataset(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(250))
     file_path = db.Column(db.String(200), nullable=False)
+
+
+class ModelDatasetPerformanceResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    model_id = db.Column(db.String(100), nullable=False)
+    dataset_id = db.Column(db.Integer, nullable=False)
+    fp = db.Column(db.Integer, nullable=True)
+    fn = db.Column(db.Integer, nullable=True)
+    tp = db.Column(db.Integer, nullable=True)
+    prec = db.Column(db.JSON, nullable=True)
+    recall = db.Column(db.JSON, nullable=True)
+    f1 = db.Column(db.JSON, nullable=True)
+    counts = db.Column(db.JSON, nullable=True)
+    exmaples = db.Column(db.JSON, nullable=True)
