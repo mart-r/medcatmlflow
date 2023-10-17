@@ -135,7 +135,12 @@ def get_mct_cdb_id(cdb_hash: str) -> Optional[str]:
     for cdb in _get_all_cdbs():
         cdb_id = cdb["id"]
         cdb_file = cdb["cdb_file"]
-        cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        try:
+            cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        except Exception as e:
+            logger.warning("Unable to get CDB hash for cdb '%s'", cdb["id"],
+                           exc_info=e)
+            continue
         if cur_hash == cdb_hash:
             return cdb_id
     return None
