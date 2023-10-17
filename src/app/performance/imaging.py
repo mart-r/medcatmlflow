@@ -7,7 +7,11 @@ from matplotlib import pyplot as plt
 from io import BytesIO
 import base64
 
-from ..medcat_linkage.medcat_integration import ModelPerformanceResults
+from ..medcat_linkage.medcat_integration import AllModelPerformanceResults
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _get_buffers(x: Iterable[str], cuis: List[str],
@@ -31,7 +35,7 @@ def _get_buffers(x: Iterable[str], cuis: List[str],
     return graph_buffers
 
 
-def get_buffers(performance_results: ModelPerformanceResults) -> dict:
+def get_buffers(performance_results: AllModelPerformanceResults) -> dict:
     model1 = performance_results[list(performance_results.keys())[0]]
     ds1 = model1[list(model1.keys())[0]]
     cuis = list(ds1["F1 for each CUI"].keys())

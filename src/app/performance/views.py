@@ -3,19 +3,14 @@ from flask import redirect, url_for
 
 import logging
 
-import os
-
 from ..modelmanage.mlflow_integration import (
     get_all_experiment_names,
     get_all_model_metadata,
     get_model_from_id,
 )
-from ..medcat_linkage.medcat_integration import get_performance
 from .datasets import get_test_datasets, upload_test_dataset
-from .datasets import delete_test_dataset
+from .datasets import delete_test_dataset, find_or_load_performance
 from .imaging import get_buffers
-
-from ..main.envs import STORAGE_PATH
 
 
 perf_bp = Blueprint("performance", __name__)
@@ -76,15 +71,12 @@ def calculate_performance():
     selected_model_ids = request.form.getlist("selected_models")
     selected_dataset_ids = request.form.getlist("selected_datasets")
 
-    models = []
-    for model_id in selected_model_ids:
-        model = get_model_from_id(model_id)
-        file_path = os.path.join(STORAGE_PATH, model.model_file_name)
-        models.append((model.name, file_path))
+    models = [get_model_from_id(model_id) for model_id in selected_model_ids]
 
     logger.info("Getting performance of %d models over %d datasets",
                 len(models), len(selected_dataset_ids))
-    performance_results = get_performance(models, selected_dataset_ids)
+    performance_results = find_or_load_performance(models,
+                                                   selected_dataset_ids)
 
     graph_buffers = get_buffers(performance_results)
 

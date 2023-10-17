@@ -6,6 +6,13 @@ import logging
 from ..main.envs import STORAGE_PATH
 from ..main.models import db as flask_db, TestDataset
 
+from ..medcat_linkage.medcat_integration import (
+    get_model_performance_with_dataset as calc_performance,
+    AllModelPerformanceResults
+)
+from ..medcat_linkage.metadata import ModelMetaData
+from .cache import get_cached, add_to_cache as _add_to_cache
+
 DATASET_PATH = os.path.join(STORAGE_PATH, "test_datasets")
 
 logger = logging.getLogger(__name__)
@@ -60,5 +67,25 @@ def delete_test_dataset(ds_name: str):
         logger.info("Removing '%s' from '%s'", ds_name, file_path)
         os.remove(file_path)
     else:
-        logger.warning("Unable to remove file '%s' - no such file",
-                       file_path)
+        logger.warning("Unable to remove file '%s' - no such file", file_path)
+
+
+def find_or_load_performance(
+    models: list[ModelMetaData], datset_info: list[tuple[str, str]]
+) -> AllModelPerformanceResults:
+    all_results = {}
+    for model in models:
+        model_results = {}
+        for dataset_name in datset_info:
+            dataset_file_path = _get_ds_file(dataset_name)
+            dataset_file_basename = os.path.basename(dataset_name)
+            try:
+                result = get_cached(model_id=model.id, ds_id=dataset_name)
+            except ValueError:
+                full_model_path = os.path.join(STORAGE_PATH,
+                                               model.model_file_name)
+                result = calc_performance(full_model_path, dataset_file_path)
+                _add_to_cache(model.id, dataset_name, result)
+            model_results[dataset_file_basename] = result
+        all_results[model.name] = model_results
+    return all_results

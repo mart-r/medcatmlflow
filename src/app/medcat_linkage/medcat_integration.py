@@ -1,4 +1,4 @@
-from typing import Iterator, Dict, TypedDict
+from typing import Dict, TypedDict, Optional
 
 import logging
 
@@ -11,6 +11,9 @@ from pydantic import ValidationError
 import shutil
 import os
 import json
+
+from ..main.utils import expire_cache_after
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +48,12 @@ def _try_update_and_load(file_path: str, overwrite: bool = True) -> CAT:
     shutil.move(new_model, folder_path)
     # move zip
     shutil.move(new_model + ".zip", zip_path)
-    return CAT.load_model_pack(zip_path)
+    return _load_CAT(zip_path)
+
+
+@expire_cache_after(60)  # keep for 1 minute
+def _load_CAT(file_path: str) -> CAT:
+    return CAT.load_model_pack(file_path)
 
 
 def load_CAT(file_path: str, overwrite: bool = True) -> CAT:
@@ -67,7 +75,7 @@ def load_CAT(file_path: str, overwrite: bool = True) -> CAT:
         CAT: The loaded model.
     """
     try:
-        return CAT.load_model_pack(file_path)
+        return _load_CAT(file_path)
     except ValidationError as e:
         logger.warning("Validation issue when loading CAT (%s). "
                        "Trying to load after fixing issue with "
@@ -89,14 +97,12 @@ def get_cdb_hash(cdb_file: str) -> str:
     return cdb.get_hash()
 
 
-def _iterate_datasets(dataset_files: list[str]) -> Iterator[tuple[str, dict]]:
-    for dsf in dataset_files:
-        with open(dsf) as f:
-            data = json.load(f)
-        yield dsf, data
+def _load_data(dsf: str) -> dict:
+    with open(dsf) as f:
+        return json.load(f)
 
 
-PerformanceResult = TypedDict(
+PerDatasetPerformanceResult = TypedDict(
     "PerformanceResult",
     {
         "False positives": int,
@@ -109,12 +115,58 @@ PerformanceResult = TypedDict(
         "Examples for each of the fp, fn, tp": dict[str, float],
     },
 )
-DatasetPerformanceResults = Dict[str, PerformanceResult]
-ModelPerformanceResults = Dict[str, DatasetPerformanceResults]
+PerModelPerformanceResults = Dict[str, PerDatasetPerformanceResult]
+AllModelPerformanceResults = Dict[str, PerModelPerformanceResults]
+
+
+MODEL_2_PERF_MAP = {
+    "fp": "False positives",
+    "fn": "False negatives",
+    "tp": "True positives",
+    "prec": "Precision for each CUI",
+    "recall": "Recall for each CUI",
+    "f1": "F1 for each CUI",
+    "counts": "Counts for each CUI",
+    "examples": "Examples for each of the fp, fn, tp",
+}
+
+PERF_MAP_2_MODEL = {value: key for key, value in MODEL_2_PERF_MAP.items()}
+
+
+def remap_to_perf_results(model_dict: dict) -> PerDatasetPerformanceResult:
+    return {MODEL_2_PERF_MAP.get(key, key): value
+            for key, value in model_dict.items()}
+
+
+def remap_from_perf_results(res: PerDatasetPerformanceResult) -> dict:
+    return {PERF_MAP_2_MODEL.get(key, key): value
+            for key, value in res.items()}
+
+
+def get_model_performance_with_dataset(model_file: str,
+                                       dataset_file: str,
+                                       cat: Optional[CAT] = None
+                                       ) -> PerModelPerformanceResults:
+    if cat is None:
+        cat = _load_CAT(model_file)
+    data = _load_data(dataset_file)
+    (fps, fns, tps,
+     cui_prec, cui_rec, cui_f1,
+     cui_counts, examples) = cat._print_stats(data)
+    return {
+        "False positives": len(fps),
+        "False negatives": len(fns),
+        "True positives": len(tps),
+        "Precision for each CUI": cui_prec,
+        "Recall for each CUI": cui_rec,
+        "F1 for each CUI": cui_f1,
+        "Counts for each CUI": cui_counts,
+        "Examples for each of the fp, fn, tp": examples
+    }
 
 
 def get_performance(models: list[tuple[str, str]],
-                    dataset_files: list[str]) -> ModelPerformanceResults:
+                    dataset_files: list[str]) -> AllModelPerformanceResults:
     """Get the performance of models given the specified datasets.
 
     This method iterates over all models and all datasets.
@@ -152,22 +204,12 @@ def get_performance(models: list[tuple[str, str]],
     """
     out = {}
     for model_name, model_file in models:
-        cat = CAT.load_model_pack(model_file)
+        cat = _load_CAT(model_file)
         per_model = {}
-        for file_name, data in _iterate_datasets(dataset_files):
-            (fps, fns, tps,
-             cui_prec, cui_rec, cui_f1,
-             cui_counts, examples) = cat._print_stats(data)
+        for file_name in dataset_files:
             file_basename = os.path.basename(file_name)
-            per_model[file_basename] = {
-                "False positives": len(fps),
-                "False negatives": len(fns),
-                "True positives": len(tps),
-                "Precision for each CUI": cui_prec,
-                "Recall for each CUI": cui_rec,
-                "F1 for each CUI": cui_f1,
-                "Counts for each CUI": cui_counts,
-                "Examples for each of the fp, fn, tp": examples
-            }
+            res = get_model_performance_with_dataset(file_name, file_name,
+                                                     cat=cat)
+            per_model[file_basename] = res
         out[model_name] = per_model
     return out
