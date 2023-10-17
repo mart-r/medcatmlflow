@@ -1,14 +1,41 @@
+from typing import Dict, Iterable, List
+
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from matplotlib import pyplot as plt
 from io import BytesIO
 import base64
 
+from ..medcat_linkage.medcat_integration import ModelPerformanceResults
 
-def get_buffers(performance_results: dict) -> dict:
+
+def _get_buffers(x: Iterable[str], cuis: List[str],
+                 per_ds_figures: Dict[str, Figure]) -> Dict[str, str]:
+    graph_buffers = {}  # To store the paths to the saved graphs
+    for dataset_name, fig in per_ds_figures.items():
+        plt.figure(fig)
+        plt.xlabel("CUI")
+        plt.xticks(x, cuis, rotation=90)  # Assuming keys are CUIs
+        plt.ylabel("Score")
+        plt.legend()
+        plt.title(f"Performance Comparison for {dataset_name}")
+        canvas = FigureCanvas(fig)
+        buffer = BytesIO()
+        canvas.print_png(buffer)
+        buffer.seek(0)
+        plot_data = base64.b64encode(buffer.read()).decode("utf-8")
+        plt.close()
+        graph_buffers[dataset_name] = plot_data
+        plt.close()
+    return graph_buffers
+
+
+def get_buffers(performance_results: ModelPerformanceResults) -> dict:
     model1 = performance_results[list(performance_results.keys())[0]]
     ds1 = model1[list(model1.keys())[0]]
     cuis = list(ds1["F1 for each CUI"].keys())
+    x_vals = range(len(cuis))
 
     # Create and save performance graphs for each dataset
     per_ds_figures = {}
@@ -28,20 +55,4 @@ def get_buffers(performance_results: dict) -> dict:
             plt.plot(x, recall.values(), label=f"{model_name} Recall")
             plt.plot(x, f1.values(), label=f"{model_name} F1")
 
-    graph_buffers = {}  # To store the paths to the saved graphs
-    for dataset_name, fig in per_ds_figures.items():
-        plt.figure(fig)
-        plt.xlabel("CUI")
-        plt.xticks(x, cuis, rotation=90)  # Assuming keys are CUIs
-        plt.ylabel("Score")
-        plt.legend()
-        plt.title(f"Performance Comparison for {dataset_name}")
-        canvas = FigureCanvas(fig)
-        buffer = BytesIO()
-        canvas.print_png(buffer)
-        buffer.seek(0)
-        plot_data = base64.b64encode(buffer.read()).decode("utf-8")
-        plt.close()
-        graph_buffers[dataset_name] = plot_data
-        plt.close()
-    return graph_buffers
+    return _get_buffers(x_vals, cuis, per_ds_figures)
