@@ -11,6 +11,7 @@ from .main.utils import setup_logging
 # blueprints
 from .main.views import main_bp
 from .modelmanage.views import models_bp
+from .performance.views import perf_bp
 
 # setup logging for root logger
 logger = logging.getLogger()
@@ -27,6 +28,7 @@ try:
 
     app.register_blueprint(main_bp)
     app.register_blueprint(models_bp)
+    app.register_blueprint(perf_bp)
 except Exception as e:
     logger.error("Problem starting app", exc_info=e)
 

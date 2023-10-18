@@ -113,11 +113,6 @@ def _get_all_cdbs() -> list[dict]:
     return _get_from_endpoint("concept-dbs/")
 
 
-@expire_cache_after(60)  # expire every minute
-def _get_all_datasets() -> list[dict]:
-    return _get_from_endpoint("datasets/")
-
-
 # TODO - instead of caching every time, save this somewhere
 @cache
 def _get_hash_for_cdb(cdb_id: str, cdb_file: str) -> Optional[str]:
@@ -135,7 +130,12 @@ def get_mct_cdb_id(cdb_hash: str) -> Optional[str]:
     for cdb in _get_all_cdbs():
         cdb_id = cdb["id"]
         cdb_file = cdb["cdb_file"]
-        cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        try:
+            cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        except Exception as e:
+            logger.warning("Unable to get MCT CDB hash for cdb '%s'",
+                           cdb["id"], exc_info=e)
+            continue
         if cur_hash == cdb_hash:
             return cdb_id
     return None
