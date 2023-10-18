@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def _get_buffers(x: Iterable[str], cuis: List[str],
+def _get_buffers(x: Iterable[int], cuis: List[str],
                  per_ds_figures: Dict[str, Figure]) -> Dict[str, str]:
     graph_buffers = {}  # To store the paths to the saved graphs
     for dataset_name, fig in per_ds_figures.items():
@@ -35,14 +35,15 @@ def _get_buffers(x: Iterable[str], cuis: List[str],
     return graph_buffers
 
 
-def get_buffers(performance_results: AllModelPerformanceResults) -> dict:
+def get_buffers(performance_results: AllModelPerformanceResults
+                ) -> Dict[str, str]:
     model1 = performance_results[list(performance_results.keys())[0]]
     ds1 = model1[list(model1.keys())[0]]
     cuis = list(ds1["F1 for each CUI"].keys())
     x_vals = range(len(cuis))
 
     # Create and save performance graphs for each dataset
-    per_ds_figures = {}
+    per_ds_figures: Dict[str, Figure] = {}
     for model_name, model_performances in performance_results.items():
         for dataset_name, perf_data in model_performances.items():
             precision = perf_data.get("Precision for each CUI", {})

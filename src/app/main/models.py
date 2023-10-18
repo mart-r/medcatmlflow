@@ -18,7 +18,7 @@ def setup_db(app: Flask):
         db.create_all()
 
 
-class TestDataset(db.Model):
+class TestDataset(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     category_name = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -26,7 +26,7 @@ class TestDataset(db.Model):
     file_path = db.Column(db.String(200), nullable=False)
 
 
-class ModelDatasetPerformanceResult(db.Model):
+class ModelDatasetPerformanceResult(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     model_id = db.Column(db.String(100), nullable=False)
     dataset_id = db.Column(db.Integer, nullable=False)
