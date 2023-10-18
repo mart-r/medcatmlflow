@@ -242,11 +242,11 @@ def _get_meta_model_from_tag(value: str,
     return ModelMetaData.from_mlflow_model(model, run_id=model.tags['run_id'])
 
 
-def _get_hist_link(version: str) -> Optional[str]:
+def _get_hist_link(version: str) -> str:
     model = get_model_from_version(version)
     if model:
         return f"/info/{model.id}"
-    return None
+    return ''
 
 
 def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:

@@ -142,8 +142,9 @@ def get_all_trees(nodes: Iterable[Node],
             # Get the link to the corresponding model
             model_link = model_link_func(node.name)
             model_descr = model_descr_func(node.name)
-            tree_repr.append((pre, model_descr, node.name, model_link))
-        trees.append((tree_repr, root.category))
+            tree_repr.append((str(pre), model_descr, str(node.name),
+                              model_link))
+        trees.append((tree_repr, str(root.category)))
     return trees
 
 
