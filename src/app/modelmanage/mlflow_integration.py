@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Callable
+from typing import Optional, Callable, List, Tuple, Dict
 import shutil
 import re
 
@@ -32,16 +32,16 @@ def create_mlflow_experiment(name: str, description: str) -> str:
     return exp
 
 
-def _get_exp_run_ids(exp: Experiment) -> list[str]:
+def _get_exp_run_ids(exp: Experiment) -> List[str]:
     return [run.info.run_id
             for run in MLFLOW_CLIENT.search_runs([exp.experiment_id, ])]
 
 
-def get_all_experiment_names() -> list[str]:
+def get_all_experiment_names() -> List[str]:
     return [el[0] for el in get_all_experiments()]
 
 
-def get_all_experiments() -> list[tuple[str, str, int]]:
+def get_all_experiments() -> List[Tuple[str, str, int]]:
     return [(str(exp.name), str(exp.tags.get('description',
                                              "Old experiment with no "
                                              "description")),
@@ -49,7 +49,7 @@ def get_all_experiments() -> list[tuple[str, str, int]]:
             for exp in MLFLOW_CLIENT.search_experiments()]
 
 
-def get_experiment_by_name(name: str) -> dict[str, str]:
+def get_experiment_by_name(name: str) -> Dict[str, str]:
     exp = MLFLOW_CLIENT.get_experiment_by_name(name)
     return {"short_name": exp.name,
             "description": exp.tags['description']}
@@ -177,7 +177,7 @@ def _get_run_id(model: RegisteredModel,
         raise ValueError(f"Unable to get run ID for model {model}")
 
 
-def get_all_models_dict() -> list[dict]:
+def get_all_models_dict() -> List[dict]:
     # Print the list of models and their information
     files_with_info = []
     for model in get_all_model_metadata():
@@ -299,7 +299,7 @@ def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     return meta
 
 
-def get_history(meta_in: ModelMetaData) -> list[tuple[str, Optional[dict]]]:
+def get_history(meta_in: ModelMetaData) -> List[Tuple[str, Optional[dict]]]:
     versions = meta_in.version_history
     history = []
     for version in versions:
@@ -313,8 +313,8 @@ def get_history(meta_in: ModelMetaData) -> list[tuple[str, Optional[dict]]]:
 
 
 def get_all_trees_with_links(
-) -> list[tuple[list[tuple[str, str, str, str]], str]]:
-    data: dict[str, tuple[list[str], str]] = {}
+) -> List[Tuple[List[Tuple[str, str, str, str]], str]]:
+    data: Dict[str, Tuple[List[str], str]] = {}
     for saved_meta in get_all_model_metadata():
         if saved_meta:
             version = saved_meta.version
@@ -334,7 +334,7 @@ def get_existing_hash2mctid() -> dict:
     return out
 
 
-def get_all_model_metadata() -> list[ModelMetaData]:
+def get_all_model_metadata() -> List[ModelMetaData]:
     return [get_meta_model(model) for model
             in MLFLOW_CLIENT.search_registered_models()]
 

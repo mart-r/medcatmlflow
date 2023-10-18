@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, List, Tuple
 import os
 
 import logging
@@ -18,8 +18,8 @@ DATASET_PATH = os.path.join(STORAGE_PATH, "test_datasets")
 logger = logging.getLogger(__name__)
 
 
-def get_test_datasets() -> list[tuple[str, str, str, str]]:
-    datasets: list[TestDataset] = TestDataset.query.all()
+def get_test_datasets() -> List[Tuple[str, str, str, str]]:
+    datasets: List[TestDataset] = TestDataset.query.all()
     return [(ds.category_name, ds.name, ds.description, ds.file_path)
             for ds in datasets]
 
@@ -97,7 +97,7 @@ def _get_or_calculate(model_id: str,
 
 
 def find_or_load_performance(
-    models: list[ModelMetaData], datset_names: list[str],
+    models: List[ModelMetaData], datset_names: List[str],
     force_recalc: bool = False,
 ) -> AllModelPerformanceResults:
     all_results = {}

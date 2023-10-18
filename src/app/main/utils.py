@@ -1,4 +1,4 @@
-from typing import Iterable, Callable
+from typing import Iterable, Callable, List, Dict, Tuple, Set
 import os
 import sys
 from functools import wraps
@@ -17,7 +17,7 @@ from .envs import LOG_LEVEL
 logger = logging.getLogger(__name__)
 
 
-def _set_parent(node_dict: dict[str, Node],
+def _set_parent(node_dict: Dict[str, Node],
                 parent_name: str,
                 child_name: str,
                 keep_existing: bool = True) -> None:
@@ -34,7 +34,7 @@ def _set_parent(node_dict: dict[str, Node],
         child.parent = parent
 
 
-def build_nodes(data: dict[str, tuple[list[str], str]]) -> dict[str, Node]:
+def build_nodes(data: Dict[str, Tuple[List[str], str]]) -> Dict[str, Node]:
     """Build nodes and relationships from a raw dictionary.
 
     The dictionary is assumed to be in the following format:
@@ -52,7 +52,7 @@ def build_nodes(data: dict[str, tuple[list[str], str]]) -> dict[str, Node]:
         dict[str, Node]: The built nodes with relationships.
     """
     # Create a dictionary to store nodes for quick reference
-    node_dict: dict[str, Node] = {}
+    node_dict: Dict[str, Node] = {}
 
     # add all children
     for child in data:
@@ -82,7 +82,7 @@ def build_nodes(data: dict[str, tuple[list[str], str]]) -> dict[str, Node]:
     return node_dict
 
 
-def find_roots(nodes: Iterable[Node]) -> list[Node]:
+def find_roots(nodes: Iterable[Node]) -> List[Node]:
     """Find root nodes from the nodes.
 
     Args:
@@ -91,7 +91,7 @@ def find_roots(nodes: Iterable[Node]) -> list[Node]:
     Returns:
         list[Node]: The root nodes.
     """
-    roots: set[Node] = set()
+    roots: Set[Node] = set()
 
     for node in nodes:
         cur_node = node
@@ -118,7 +118,7 @@ def get_tree(root_node: Node) -> str:
 def get_all_trees(nodes: Iterable[Node],
                   model_link_func: Callable[[str], str],
                   model_descr_func: Callable[[str], str],
-                  ) -> list[tuple[list[tuple[str, str, str, str]], str]]:
+                  ) -> List[Tuple[List[Tuple[str, str, str, str]], str]]:
     """Get all tree representations with links to corresponding models.
 
     Args:
@@ -135,7 +135,7 @@ def get_all_trees(nodes: Iterable[Node],
     """
     # list of tree lines, and category
     # each line: prefix, name, link
-    trees: list[tuple[list[tuple[str, str, str, str]], str]] = []
+    trees: List[Tuple[List[Tuple[str, str, str, str]], str]] = []
     for root in find_roots(nodes):
         tree_repr = []
         for pre, _, node in RenderTree(root):

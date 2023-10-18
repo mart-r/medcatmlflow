@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 import json
 import requests
 import logging
 import tempfile
-from functools import cache
+from functools import lru_cache
 import re
 from urllib.parse import urlparse
 
@@ -12,6 +12,8 @@ from ..main.utils import expire_cache_after
 from ..main.envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
 
 logger = logging.getLogger(__name__)
+
+cache = lru_cache(None)
 
 
 # port with colon and slash on group 1
@@ -97,7 +99,7 @@ def _get_token_header() -> dict:
     }
 
 
-def _get_from_endpoint(endpoint: str) -> list[dict]:
+def _get_from_endpoint(endpoint: str) -> List[dict]:
     try:
         headers = _get_token_header()
     except ValueError as e:
@@ -121,7 +123,7 @@ def _get_from_endpoint(endpoint: str) -> list[dict]:
 
 
 @expire_cache_after(60)  # expire every minute
-def _get_all_cdbs() -> list[dict]:
+def _get_all_cdbs() -> List[dict]:
     return _get_from_endpoint("concept-dbs/")
 
 

@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict, Optional
+from typing import Dict, TypedDict, Optional, List, Tuple
 
 import logging
 
@@ -110,11 +110,11 @@ _IncomingPerDatasetPerfResult = TypedDict(
         "fp": int,
         "fn": int,
         "tp": int,
-        "prec": dict[str, float],
-        "recall": dict[str, float],
-        "f1": dict[str, float],
-        "counts": dict[str, float],
-        "examples": dict[str, float],
+        "prec": Dict[str, float],
+        "recall": Dict[str, float],
+        "f1": Dict[str, float],
+        "counts": Dict[str, float],
+        "examples": Dict[str, float],
     },
 )
 
@@ -125,11 +125,11 @@ PerDatasetPerformanceResult = TypedDict(
         "False positives": int,
         "False negatives": int,
         "True positives": int,
-        "Precision for each CUI": dict[str, float],
-        "Recall for each CUI": dict[str, float],
-        "F1 for each CUI": dict[str, float],
-        "Counts for each CUI": dict[str, float],
-        "Examples for each of the fp, fn, tp": dict[str, float],
+        "Precision for each CUI": Dict[str, float],
+        "Recall for each CUI": Dict[str, float],
+        "F1 for each CUI": Dict[str, float],
+        "Counts for each CUI": Dict[str, float],
+        "Examples for each of the fp, fn, tp": Dict[str, float],
     },
 )
 PerModelPerformanceResults = Dict[str, PerDatasetPerformanceResult]
@@ -183,8 +183,8 @@ def get_model_performance_with_dataset(model_file: str,
     }
 
 
-def get_performance(models: list[tuple[str, str]],
-                    dataset_files: list[str]) -> AllModelPerformanceResults:
+def get_performance(models: List[Tuple[str, str]],
+                    dataset_files: List[str]) -> AllModelPerformanceResults:
     """Get the performance of models given the specified datasets.
 
     This method iterates over all models and all datasets.
