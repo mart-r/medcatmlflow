@@ -70,7 +70,7 @@ def show_performance():
 def calculate_performance():
     selected_model_ids = request.form.getlist("selected_models")
     selected_dataset_ids = request.form.getlist("selected_datasets")
-    request.form.get("recalc_performance")
+    force_recalc = request.form.get("recalc_performance")
     if not selected_model_ids or not selected_dataset_ids:
         # TODO - add message about missing stuff
         return show_performance()
@@ -80,7 +80,8 @@ def calculate_performance():
     logger.info("Getting performance of %d models over %d datasets",
                 len(models), len(selected_dataset_ids))
     performance_results = find_or_load_performance(models,
-                                                   selected_dataset_ids)
+                                                   selected_dataset_ids,
+                                                   force_recalc=force_recalc)
 
     graph_buffers = get_buffers(performance_results)
 

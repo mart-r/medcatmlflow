@@ -8,7 +8,7 @@ from ..main.models import db as flask_db, TestDataset
 
 from ..medcat_linkage.medcat_integration import (
     get_model_performance_with_dataset as calc_performance,
-    AllModelPerformanceResults
+    AllModelPerformanceResults, PerDatasetPerformanceResult
 )
 from ..medcat_linkage.metadata import ModelMetaData
 from .cache import get_cached, add_to_cache as _add_to_cache
@@ -70,22 +70,42 @@ def delete_test_dataset(ds_name: str):
         logger.warning("Unable to remove file '%s' - no such file", file_path)
 
 
+def _get_cached(model_id: str,
+                ds_id: str) -> Optional[PerDatasetPerformanceResult]:
+    try:
+        return get_cached(model_id=model_id, ds_id=ds_id)
+    except ValueError:
+        return None
+
+
+def _get_or_calculate(model_id: str,
+                      model_file_name: str,
+                      dataset_id: str,
+                      force_recalc: bool = False
+                      ) -> PerDatasetPerformanceResult:
+    full_model_path = os.path.join(STORAGE_PATH, model_file_name)
+    dataset_file_path = _get_ds_file(dataset_id)
+    if not force_recalc:
+        result = _get_cached(model_id=model_id, ds_id=dataset_id)
+    else:
+        result = None
+    if result is None:
+        result = calc_performance(full_model_path, dataset_file_path)
+        _add_to_cache(model_id, dataset_id, result)
+    return result
+
+
 def find_or_load_performance(
-    models: list[ModelMetaData], datset_info: list[tuple[str, str]]
+    models: list[ModelMetaData], datset_names: list[str],
+    force_recalc: bool = False,
 ) -> AllModelPerformanceResults:
     all_results = {}
     for model in models:
         model_results = {}
-        for dataset_name in datset_info:
-            dataset_file_path = _get_ds_file(dataset_name)
+        for dataset_name in datset_names:
             dataset_file_basename = os.path.basename(dataset_name)
-            try:
-                result = get_cached(model_id=model.id, ds_id=dataset_name)
-            except ValueError:
-                full_model_path = os.path.join(STORAGE_PATH,
-                                               model.model_file_name)
-                result = calc_performance(full_model_path, dataset_file_path)
-                _add_to_cache(model.id, dataset_name, result)
+            result = _get_or_calculate(model.id, model.model_file_name,
+                                       dataset_name, force_recalc=force_recalc)
             model_results[dataset_file_basename] = result
         all_results[model.name] = model_results
     return all_results
