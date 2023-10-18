@@ -1,6 +1,7 @@
 import os
 
-STORAGE_PATH = os.environ.get("MEDCATMLFLOW_MODEL_STORAGE_PATH")
+STORAGE_PATH = os.environ.get("MEDCATMLFLOW_MODEL_STORAGE_PATH",
+                              "/app/db/medcatmlflow/models/")
 
 DB_URI = os.environ.get("MEDCATMLFLOW_DB_URI")
 

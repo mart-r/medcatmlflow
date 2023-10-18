@@ -41,9 +41,10 @@ def get_all_experiment_names() -> list[str]:
     return [el[0] for el in get_all_experiments()]
 
 
-def get_all_experiments() -> list[tuple[str, str]]:
-    return [(exp.name, exp.tags.get('description',
-                                    "Old experiment with no description"),
+def get_all_experiments() -> list[tuple[str, str, int]]:
+    return [(str(exp.name), str(exp.tags.get('description',
+                                             "Old experiment with no "
+                                             "description")),
              len(_get_exp_run_ids(exp)))
             for exp in MLFLOW_CLIENT.search_experiments()]
 
@@ -169,7 +170,11 @@ def _get_run_id(model: RegisteredModel,
     ver = MLFLOW_CLIENT.search_model_versions(f"name='{model.name}'")[0]
     source = ver.source
     # e.g: runs:/5a5dad1636bf4d87bba373e10dcd99e8//app/models/smth.zip
-    return run_id_pattern.match(source).group(1)
+    matched = run_id_pattern.match(source)
+    if matched:
+        return matched.group(1)
+    else:
+        raise ValueError(f"Unable to get run ID for model {model}")
 
 
 def get_all_models_dict() -> list[dict]:

@@ -1,4 +1,4 @@
-from typing import Iterator, Callable
+from typing import Iterable, Callable
 import os
 import sys
 from functools import wraps
@@ -82,11 +82,11 @@ def build_nodes(data: dict[str, tuple[list[str], str]]) -> dict[str, Node]:
     return node_dict
 
 
-def find_roots(nodes: Iterator[Node]) -> list[Node]:
+def find_roots(nodes: Iterable[Node]) -> list[Node]:
     """Find root nodes from the nodes.
 
     Args:
-        nodes (Iterator[Node]): The nodes.
+        nodes (Iterable[Node]): The nodes.
 
     Returns:
         list[Node]: The root nodes.
@@ -115,7 +115,7 @@ def get_tree(root_node: Node) -> str:
     return tree
 
 
-def get_all_trees(nodes: Iterator[Node],
+def get_all_trees(nodes: Iterable[Node],
                   model_link_func: Callable[[str], str],
                   model_descr_func: Callable[[str], str],
                   ) -> list[tuple[list[tuple[str, str, str, str]], str]]:
