@@ -28,7 +28,16 @@ def split_url(url):
 def download_cdb(cdb_file_url: str) -> str:
     # the URL comes without the port
     # so I need to fix that
-    correct_port = PORT_PATTERN.search(MCT_BASE_URL).group(1)
+    if MCT_BASE_URL is None:
+        raise ValueError("No MCT_BASE_URL defined "
+                         "- cannot use MedCATtrainer stuff")
+    matched = PORT_PATTERN.search(MCT_BASE_URL)
+    if matched:
+        correct_port = matched.group(1)
+    else:
+        correct_port = "80"  # DEFAULT to 80
+        logger.warning("No port found in MCT base URL (%s) - using %s instead",
+                       MCT_BASE_URL, correct_port)
     current_port_match = PORT_PATTERN.search(cdb_file_url)
     if current_port_match:
         current_port = current_port_match.group(1)
@@ -37,7 +46,10 @@ def download_cdb(cdb_file_url: str) -> str:
         protocol_and_ip, endpoint = split_url(cdb_file_url)
         url_fixed_port = f"{protocol_and_ip}{correct_port}{endpoint}"
     logger.info("Fixed port from '%s' to '%s", cdb_file_url, url_fixed_port)
-    return _download_url(url_fixed_port)
+    saved_file_name = _download_url(url_fixed_port)
+    if not saved_file_name:
+        raise ValueError(f"Unable to find CDB from {cdb_file_url}")
+    return saved_file_name
 
 
 def _download_url(url: str) -> Optional[str]:
