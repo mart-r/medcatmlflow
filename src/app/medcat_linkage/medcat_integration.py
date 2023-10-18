@@ -104,8 +104,23 @@ def _load_data(dsf: str) -> dict:
         return json.load(f)
 
 
+_IncomingPerDatasetPerfResult = TypedDict(
+    "_IncomingPerDatasetPerfResult",
+    {
+        "fp": int,
+        "fn": int,
+        "tp": int,
+        "prec": dict[str, float],
+        "recall": dict[str, float],
+        "f1": dict[str, float],
+        "counts": dict[str, float],
+        "examples": dict[str, float],
+    },
+)
+
+
 PerDatasetPerformanceResult = TypedDict(
-    "PerformanceResult",
+    "PerDatasetPerformanceResult",
     {
         "False positives": int,
         "False negatives": int,
@@ -135,8 +150,9 @@ MODEL_2_PERF_MAP = {
 PERF_MAP_2_MODEL = {value: key for key, value in MODEL_2_PERF_MAP.items()}
 
 
-def remap_to_perf_results(model_dict: dict) -> PerDatasetPerformanceResult:
-    return {MODEL_2_PERF_MAP.get(key, key): value
+def remap_to_perf_results(model_dict: _IncomingPerDatasetPerfResult
+                          ) -> PerDatasetPerformanceResult:
+    return {MODEL_2_PERF_MAP.get(key, key): value  # type: ignore
             for key, value in model_dict.items()}
 
 
@@ -148,7 +164,7 @@ def remap_from_perf_results(res: PerDatasetPerformanceResult) -> dict:
 def get_model_performance_with_dataset(model_file: str,
                                        dataset_file: str,
                                        cat: Optional[CAT] = None
-                                       ) -> PerModelPerformanceResults:
+                                       ) -> PerDatasetPerformanceResult:
     if cat is None:
         cat = _load_CAT(model_file)
     data = _load_data(dataset_file)
@@ -207,7 +223,7 @@ def get_performance(models: list[tuple[str, str]],
     out = {}
     for model_name, model_file in models:
         cat = _load_CAT(model_file)
-        per_model = {}
+        per_model: PerModelPerformanceResults = {}
         for file_name in dataset_files:
             file_basename = os.path.basename(file_name)
             res = get_model_performance_with_dataset(file_name, file_name,
