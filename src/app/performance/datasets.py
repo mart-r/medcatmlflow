@@ -50,6 +50,7 @@ def upload_test_dataset(
 
     flask_db.session.add(descr)
     flask_db.session.commit()
+    return None
 
 
 def delete_test_dataset(ds_name: str):
