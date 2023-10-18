@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 import json
 import requests
 import logging
 import tempfile
-from functools import cache
+from functools import lru_cache
 import re
 from urllib.parse import urlparse
 
@@ -12,6 +12,8 @@ from ..main.utils import expire_cache_after
 from ..main.envs import MCT_BASE_URL, MCT_USERNAME, MCT_PASSWORD
 
 logger = logging.getLogger(__name__)
+
+cache = lru_cache(None)
 
 
 # port with colon and slash on group 1
@@ -28,7 +30,16 @@ def split_url(url):
 def download_cdb(cdb_file_url: str) -> str:
     # the URL comes without the port
     # so I need to fix that
-    correct_port = PORT_PATTERN.search(MCT_BASE_URL).group(1)
+    if MCT_BASE_URL is None:
+        raise ValueError("No MCT_BASE_URL defined "
+                         "- cannot use MedCATtrainer stuff")
+    matched = PORT_PATTERN.search(MCT_BASE_URL)
+    if matched:
+        correct_port = matched.group(1)
+    else:
+        correct_port = "80"  # DEFAULT to 80
+        logger.warning("No port found in MCT base URL (%s) - using %s instead",
+                       MCT_BASE_URL, correct_port)
     current_port_match = PORT_PATTERN.search(cdb_file_url)
     if current_port_match:
         current_port = current_port_match.group(1)
@@ -37,7 +48,10 @@ def download_cdb(cdb_file_url: str) -> str:
         protocol_and_ip, endpoint = split_url(cdb_file_url)
         url_fixed_port = f"{protocol_and_ip}{correct_port}{endpoint}"
     logger.info("Fixed port from '%s' to '%s", cdb_file_url, url_fixed_port)
-    return _download_url(url_fixed_port)
+    saved_file_name = _download_url(url_fixed_port)
+    if not saved_file_name:
+        raise ValueError(f"Unable to find CDB from {cdb_file_url}")
+    return saved_file_name
 
 
 def _download_url(url: str) -> Optional[str]:
@@ -85,7 +99,7 @@ def _get_token_header() -> dict:
     }
 
 
-def _get_from_endpoint(endpoint: str) -> list[dict]:
+def _get_from_endpoint(endpoint: str) -> List[dict]:
     try:
         headers = _get_token_header()
     except ValueError as e:
@@ -109,13 +123,8 @@ def _get_from_endpoint(endpoint: str) -> list[dict]:
 
 
 @expire_cache_after(60)  # expire every minute
-def _get_all_cdbs() -> list[dict]:
+def _get_all_cdbs() -> List[dict]:
     return _get_from_endpoint("concept-dbs/")
-
-
-@expire_cache_after(60)  # expire every minute
-def _get_all_datasets() -> list[dict]:
-    return _get_from_endpoint("datasets/")
 
 
 # TODO - instead of caching every time, save this somewhere
@@ -135,7 +144,12 @@ def get_mct_cdb_id(cdb_hash: str) -> Optional[str]:
     for cdb in _get_all_cdbs():
         cdb_id = cdb["id"]
         cdb_file = cdb["cdb_file"]
-        cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        try:
+            cur_hash = _get_hash_for_cdb(cdb_id, cdb_file)
+        except Exception as e:
+            logger.warning("Unable to get MCT CDB hash for cdb '%s'",
+                           cdb["id"], exc_info=e)
+            continue
         if cur_hash == cdb_hash:
             return cdb_id
     return None

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dataset{% endblock %}
+
+{% block content %}
+<h1>Upload Dataset</h1>
+<form action="/upload_dataset" method="post" enctype="multipart/form-data">
+<!-- <form method="post" enctype="multipart/form-data"> -->
+    <label for="category">Select a Category:</label>
+    <select id="category" name="category" required>
+        <option value="" disabled selected>Select a category</option>
+        {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <label for="dataset_name">Dataset Name:</label>
+    <input type="text" id="dataset_name" name="dataset_name" required>
+    <br><br>
+    <label for="dataset_description">Description:</label>
+    <textarea id="dataset_description" name="dataset_description" rows="4" cols="50" required></textarea>
+    <br><br>
+    <label for="file">Select a file:</label>
+    <input type="file" name="file" id="file">
+    <br><br>
+    <input type="submit" value="Upload">
+</form>
+{% endblock %}

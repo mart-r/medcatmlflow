@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Callable
+from typing import Optional, Callable, List, Tuple, Dict
 import shutil
 import re
 
@@ -32,20 +32,38 @@ def create_mlflow_experiment(name: str, description: str) -> str:
     return exp
 
 
-def _get_exp_run_ids(exp: Experiment) -> list[str]:
+def _get_exp_run_ids(exp: Experiment) -> List[str]:
     return [run.info.run_id
             for run in MLFLOW_CLIENT.search_runs([exp.experiment_id, ])]
 
 
-def get_all_experiment_names() -> list[str]:
+def get_all_experiment_names() -> List[str]:
     return [el[0] for el in get_all_experiments()]
 
 
-def get_all_experiments() -> list[tuple[str, str]]:
-    return [(exp.name, exp.tags.get('description',
-                                    "Old experiment with no description"),
+def get_all_experiments() -> List[Tuple[str, str, int]]:
+    return [(str(exp.name), str(exp.tags.get('description',
+                                             "Old experiment with no "
+                                             "description")),
              len(_get_exp_run_ids(exp)))
             for exp in MLFLOW_CLIENT.search_experiments()]
+
+
+def get_experiment_by_name(name: str) -> Dict[str, str]:
+    exp = MLFLOW_CLIENT.get_experiment_by_name(name)
+    return {"short_name": exp.name,
+            "description": exp.tags['description']}
+
+
+def update_experiment_description(name: str, new_description: str) -> None:
+    exp = MLFLOW_CLIENT.get_experiment_by_name(name)
+    old_descr = exp.tags['description']
+    if old_descr == new_description:
+        # do nothing
+        return
+    exp.tags['description'] = new_description
+    MLFLOW_CLIENT.set_experiment_tag(exp.experiment_id, 'description',
+                                     new_description)
 
 
 def delete_experiment(name: str) -> None:
@@ -128,16 +146,38 @@ RUN_ID_PATTERN = re.compile(re.escape("runs:/") +
                             re.escape("/") + ".*")
 
 
+def update_model_info(model: RegisteredModel,
+                      new_name: str, new_descr: str) -> None:
+    meta = get_meta_model(model)
+    changed = False
+    if new_name != meta.name:
+        logger.debug("Changing model name from '%s' to '%s'",
+                     meta.name, new_name)
+        meta.name = new_name
+        changed = True
+    if new_descr != meta.description:
+        logger.debug("Changing model description from '%s' to '%s'",
+                     meta.description, new_descr)
+        meta.description = new_descr
+        changed = True
+    if changed:
+        _update_model_meta(model, meta)
+
+
 def _get_run_id(model: RegisteredModel,
                 run_id_pattern: re.Pattern = RUN_ID_PATTERN
                 ) -> str:
     ver = MLFLOW_CLIENT.search_model_versions(f"name='{model.name}'")[0]
     source = ver.source
     # e.g: runs:/5a5dad1636bf4d87bba373e10dcd99e8//app/models/smth.zip
-    return run_id_pattern.match(source).group(1)
+    matched = run_id_pattern.match(source)
+    if matched:
+        return matched.group(1)
+    else:
+        raise ValueError(f"Unable to get run ID for model {model}")
 
 
-def get_all_models_dict() -> list[dict]:
+def get_all_models_dict() -> List[dict]:
     # Print the list of models and their information
     files_with_info = []
     for model in get_all_model_metadata():
@@ -176,13 +216,6 @@ def delete_mlflow_file(filename: str) -> None:
         MLFLOW_CLIENT.delete_registered_model(model_name)
 
 
-def recalc_model_metedata(model: RegisteredModel) -> None:
-    file_path = os.path.join(STORAGE_PATH, model.tags["model_file_name"])
-    basename = os.path.basename(file_path)
-    model = MLFLOW_CLIENT.get_registered_model(basename)
-    _recalc_model_metadata(model)
-
-
 def _get_mlflow_from_tag(value: str,
                          _tag_key: str = 'version') -> RegisteredModel:
     models = MLFLOW_CLIENT.search_registered_models(
@@ -209,11 +242,11 @@ def _get_meta_model_from_tag(value: str,
     return ModelMetaData.from_mlflow_model(model, run_id=model.tags['run_id'])
 
 
-def _get_hist_link(version: str) -> Optional[str]:
+def _get_hist_link(version: str) -> str:
     model = get_model_from_version(version)
     if model:
         return f"/info/{model.id}"
-    return None
+    return ''
 
 
 def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
@@ -233,7 +266,7 @@ def _update_model_meta(model: RegisteredModel, meta: ModelMetaData) -> None:
     model.tags.update(meta.as_dict())
 
 
-def _recalc_model_metadata(model: RegisteredModel) -> None:
+def recalc_model_metadata(model: RegisteredModel) -> None:
     if 'cdb_hash' in model.tags:
         cdb_hash = model.tags['cdb_hash']
     else:
@@ -261,12 +294,12 @@ def get_meta_model(model: RegisteredModel) -> ModelMetaData:
     except KeyError as e:  # old model data with not all the keys
         logger.warning("Recalculating meta - not everything was saved on disk"
                        " exception: %e", e)
-        _recalc_model_metadata(model)
+        recalc_model_metadata(model)
         meta = ModelMetaData.from_mlflow_model(model, run_id=run_id)
     return meta
 
 
-def get_history(meta_in: ModelMetaData) -> list[tuple[str, Optional[dict]]]:
+def get_history(meta_in: ModelMetaData) -> List[Tuple[str, Optional[dict]]]:
     versions = meta_in.version_history
     history = []
     for version in versions:
@@ -280,8 +313,8 @@ def get_history(meta_in: ModelMetaData) -> list[tuple[str, Optional[dict]]]:
 
 
 def get_all_trees_with_links(
-) -> list[tuple[list[tuple[str, str, str, str]], str]]:
-    data: dict[str, tuple[list[str], str]] = {}
+) -> List[Tuple[List[Tuple[str, str, str, str]], str]]:
+    data: Dict[str, Tuple[List[str], str]] = {}
     for saved_meta in get_all_model_metadata():
         if saved_meta:
             version = saved_meta.version
@@ -301,7 +334,7 @@ def get_existing_hash2mctid() -> dict:
     return out
 
 
-def get_all_model_metadata() -> list[ModelMetaData]:
+def get_all_model_metadata() -> List[ModelMetaData]:
     return [get_meta_model(model) for model
             in MLFLOW_CLIENT.search_registered_models()]
 
