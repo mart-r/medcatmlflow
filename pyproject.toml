@@ -26,4 +26,4 @@ dependencies = [
     "anytree",
     "gunicorn"
 ]
-version = "0.3.0"
+version = "0.3.1"
