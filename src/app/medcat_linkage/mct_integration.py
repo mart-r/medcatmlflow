@@ -113,11 +113,6 @@ def _get_all_cdbs() -> list[dict]:
     return _get_from_endpoint("concept-dbs/")
 
 
-@expire_cache_after(60)  # expire every minute
-def _get_all_datasets() -> list[dict]:
-    return _get_from_endpoint("datasets/")
-
-
 # TODO - instead of caching every time, save this somewhere
 @cache
 def _get_hash_for_cdb(cdb_id: str, cdb_file: str) -> Optional[str]:
