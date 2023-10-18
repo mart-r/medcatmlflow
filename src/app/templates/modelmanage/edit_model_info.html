@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Model Information{% endblock %}
+
+{% block content %}
+<h1>Edit Model Information</h1>
+<form method="post">
+    <label for="new_name">New Name:</label>
+    <input type="text" id="new_name" name="new_name" value="{{ model.name }}" required>
+    <br>
+    <label for="new_description">New Description:</label>
+    <br>
+    <textarea id="new_description" name="new_description" rows="5" cols="40" required>{{ model.description }}</textarea>
+    <br>
+    <input type="submit" value="Save">
+</form>
+<a href="{{ url_for('modelmanage.show_file_info', file_id=model.id) }}">Back to File Information</a>
+{% endblock %}

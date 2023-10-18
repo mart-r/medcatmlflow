@@ -22,6 +22,7 @@
                     <input type="hidden" name="short_name_to_remove" value="{{ name }}">
                     <input type="submit" value="Remove">
                 </form>
+                <a href="{{ url_for('modelmanage.edit_experiment', short_name=name) }}">Edit Description</a>
             </td>
         </tr>
         {% endfor %}

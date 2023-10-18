@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Category{% endblock %}
+
+{% block content %}
+<h1>Edit Category: {{ experiment.short_name }}</h1>
+<form method="post">
+    <label for="new_description">New Description:</label>
+    <br>
+    <textarea id="new_description" name="new_description" rows="5" cols="40" required>{{ experiment.description }}</textarea>
+    <br>
+    <input type="submit" value="Save">
+</form>
+{% endblock %}
