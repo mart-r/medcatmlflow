@@ -4,7 +4,7 @@ import os
 from uuid import uuid4
 
 from dataclasses import dataclass, field, fields
-from typing import Optional
+from typing import Optional, List
 
 from mlflow.entities.model_registry import RegisteredModel
 
@@ -83,7 +83,7 @@ def create_meta(
     # make sure it's a deep copy
     performance = copy.deepcopy(cat.config.version.performance)
     # in case something gets modified - nothing right now
-    changed_parts = []
+    changed_parts: List[str] = []
     cdb_hash = cat.cdb.get_hash()
     if cdb_hash in hash2mct_id:
         mct_cdb_id = hash2mct_id[cdb_hash]
