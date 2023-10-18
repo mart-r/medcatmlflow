@@ -94,7 +94,9 @@ def get_cdb_hash(cdb_file: str) -> str:
         str: The CDB hash.
     """
     cdb = CDB.load(cdb_file)
-    return cdb.get_hash()
+    cdb_hash = cdb.get_hash()
+    del cdb
+    return cdb_hash
 
 
 def _load_data(dsf: str) -> dict:
