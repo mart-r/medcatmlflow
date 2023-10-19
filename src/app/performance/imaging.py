@@ -1,5 +1,7 @@
 from typing import Dict, Iterable, List
 
+# to set matplotlib backend
+import imgutils  # noqa
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
