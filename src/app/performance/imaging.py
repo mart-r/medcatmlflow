@@ -1,5 +1,7 @@
 from typing import Dict, Iterable, List
 
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
