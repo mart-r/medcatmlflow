@@ -99,6 +99,18 @@ def check_cuis():
         selected_models = request.form.getlist('selected_models')
         selected_cuis = request.form.get('cuis').split(',')
         selected_cuis = [cui.strip() for cui in selected_cuis]
+        if 'cuis_file' in request.files:
+            cuis_file = request.files['cuis_file']
+        else:
+            cuis_file = None
+        if cuis_file:
+            # Save the uploaded file to the 'uploads' folder
+            file_contents = cuis_file.read().decode('utf-8')
+            if "," in file_contents:
+                file_cuis = file_contents.split(",")
+            else:
+                file_cuis = file_contents.split("\n")
+            selected_cuis += [cui.strip() for cui in file_cuis if cui.strip()]
         model_cuis_counts = get_model_cui_counts(selected_models,
                                                  selected_cuis)
         buffer = get_buffer_for_cui_count_train(model_cuis_counts)
