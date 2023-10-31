@@ -116,6 +116,7 @@ def check_cuis():
                                                  selected_cuis)
         total_counts = [get_model_total_count(model)
                         for model in selected_models]
+        total_counts = [tc for tc in total_counts if tc is not None]
         buffer = get_buffer_for_cui_count_train(model_cuis_counts,
                                                 total_counts)
         return render_template('performance/evaluate_cuis.html',
