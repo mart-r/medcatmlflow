@@ -53,7 +53,7 @@ def _plot_model_count_train(fig: Figure, model_data: Dict[str, int]
 
 
 def get_buffer_for_cui_count_train(data: Dict[str, Dict[str, int]],
-                                   totals: list[int],
+                                   totals: List[int],
                                    ) -> str:
     fig = plt.figure()
     for model_data in data.values():
