@@ -231,3 +231,8 @@ def get_performance(models: List[Tuple[str, str]],
             per_model[file_basename] = res
         out[model_name] = per_model
     return out
+
+
+def get_cui_counts_for_model(model_file_path: str, cuis: List[str]) -> dict:
+    cat = load_CAT(model_file_path)
+    return {cui: cat.cdb.cui2count_train.get(cui, 0) for cui in cuis}

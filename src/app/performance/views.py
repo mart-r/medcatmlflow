@@ -7,10 +7,12 @@ from ..modelmanage.mlflow_integration import (
     get_all_experiment_names,
     get_all_model_metadata,
     get_model_from_id,
+    get_model_cui_counts,
+    get_model_total_count,
 )
 from .datasets import get_test_datasets, upload_test_dataset
 from .datasets import delete_test_dataset, find_or_load_performance
-from .imaging import get_buffers
+from .imaging import get_buffers, get_buffer_for_cui_count_train
 
 
 perf_bp = Blueprint("performance", __name__)
@@ -90,3 +92,40 @@ def calculate_performance():
         performance_results=performance_results,
         graph_paths=graph_buffers,
     )
+
+
+@perf_bp.route('/check_cuis', methods=['GET', 'POST'])
+def check_cuis():
+    if request.method == 'POST':
+        selected_models = request.form.getlist('selected_models')
+        selected_cuis = request.form.get('cuis').split(',')
+        selected_cuis = [cui.strip() for cui in selected_cuis]
+        if 'cuis_file' in request.files:
+            cuis_file = request.files['cuis_file']
+        else:
+            cuis_file = None
+        if cuis_file:
+            # Save the uploaded file to the 'uploads' folder
+            file_contents = cuis_file.read().decode('utf-8')
+            if "," in file_contents:
+                file_cuis = file_contents.split(",")
+            else:
+                file_cuis = file_contents.split("\n")
+            selected_cuis += [cui.strip() for cui in file_cuis if cui.strip()]
+        model_cuis_counts = get_model_cui_counts(selected_models,
+                                                 selected_cuis)
+        total_counts = [get_model_total_count(model)
+                        for model in selected_models]
+        total_counts = [tc for tc in total_counts if tc is not None]
+        buffer = get_buffer_for_cui_count_train(model_cuis_counts,
+                                                total_counts)
+        return render_template('performance/evaluate_cuis.html',
+                               graphs={"Train counts": buffer})
+
+    available_categories = get_all_experiment_names()
+
+    available_models = [md.as_dict() for md in get_all_model_metadata()]
+
+    return render_template('performance/check_cuis.html',
+                           available_categories=available_categories,
+                           available_models=available_models)
