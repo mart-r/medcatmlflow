@@ -52,13 +52,15 @@ def _plot_model_count_train(fig: Figure, model_data: Dict[str, int]
     return locs, cuis
 
 
-def get_buffer_for_cui_count_train(data: Dict[str, Dict[str, int]]
+def get_buffer_for_cui_count_train(data: Dict[str, Dict[str, int]],
+                                   totals: list[int],
                                    ) -> str:
     fig = plt.figure()
     for model_data in data.values():
         locs, cuis = _plot_model_count_train(fig, model_data)
+    legend = [f"{key} ({total})" for key, total in zip(data.keys(), totals)]
     return _get_buffers_from_fig("Count train", locs, cuis, fig,
-                                 legend=list(data.keys()), ylabel="Count")
+                                 legend=legend, ylabel="Count")
 
 
 def get_buffers(performance_results: AllModelPerformanceResults

@@ -8,6 +8,7 @@ from ..modelmanage.mlflow_integration import (
     get_all_model_metadata,
     get_model_from_id,
     get_model_cui_counts,
+    get_model_total_count,
 )
 from .datasets import get_test_datasets, upload_test_dataset
 from .datasets import delete_test_dataset, find_or_load_performance
@@ -113,7 +114,10 @@ def check_cuis():
             selected_cuis += [cui.strip() for cui in file_cuis if cui.strip()]
         model_cuis_counts = get_model_cui_counts(selected_models,
                                                  selected_cuis)
-        buffer = get_buffer_for_cui_count_train(model_cuis_counts)
+        total_counts = [get_model_total_count(model)
+                        for model in selected_models]
+        buffer = get_buffer_for_cui_count_train(model_cuis_counts,
+                                                total_counts)
         return render_template('performance/evaluate_cuis.html',
                                graphs={"Train counts": buffer})
 

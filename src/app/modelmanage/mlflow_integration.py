@@ -362,3 +362,11 @@ def get_model_cui_counts(model_ids: List[str], cuis: List[str]) -> dict:
         model_result = get_cui_counts_for_model(file_path, cuis)
         out[model_meta.name] = model_result
     return out
+
+
+_STATS_TOTAL_PATH = "Number of seen training examples in total"
+
+
+def get_model_total_count(model_id: str) -> list[int]:
+    model_meta = get_model_from_id(model_id)
+    return model_meta.stats[_STATS_TOTAL_PATH]
