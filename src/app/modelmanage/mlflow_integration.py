@@ -10,6 +10,7 @@ from mlflow.entities import Experiment
 from mlflow.entities.model_registry import RegisteredModel
 
 from ..medcat_linkage.metadata import ModelMetaData, create_meta
+from ..medcat_linkage.medcat_integration import get_cui_counts_for_model
 from ..main.utils import build_nodes, get_all_trees, NoSuchModelExcepton
 
 from ..main.envs import STORAGE_PATH
@@ -351,3 +352,29 @@ def get_model_name_from_version(version: str) -> str:
     if not model:
         return version
     return model.name
+
+
+def get_model_cui_counts(model_ids: List[str], cuis: List[str]) -> dict:
+    out = {}
+    for model_id in model_ids:
+        model_meta = get_model_from_id(model_id)
+        if not model_meta:
+            logger.warning("Could not find model meta for model %s (%s)",
+                           model_id, "model CUI counts")
+            continue
+        file_path = os.path.join(STORAGE_PATH, model_meta.model_file_name)
+        model_result = get_cui_counts_for_model(file_path, cuis)
+        out[model_meta.name] = model_result
+    return out
+
+
+_STATS_TOTAL_PATH = "Number of seen training examples in total"
+
+
+def get_model_total_count(model_id: str) -> Optional[int]:
+    model_meta = get_model_from_id(model_id)
+    if not model_meta:
+        logger.warning("Could not find model meta for model %s (%s)",
+                       model_id, "model CUI counts")
+        return None
+    return model_meta.stats[_STATS_TOTAL_PATH]

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Check CUIs{% endblock %}
+
+{% block content %}
+<h1>Check CUIs</h1>
+
+<form method="post" action="/check_cuis" enctype="multipart/form-data">
+    <h2>Select Category:</h2>
+    <select id="categorySelect" name="selected_category">
+        <option value="" disabled selected>Select a Category</option>
+        {% for category in available_categories %}
+            <option value="{{ category }}">{{ category }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="modelOptions" style="display: none;">
+        <h2>Select Models:</h2>
+        {% for model_dict in available_models %}
+            <label class="modelOption" data-category="{{ model_dict.category }}">
+                <input type="checkbox" name="selected_models" value="{{ model_dict.id }}">
+                {{ model_dict.name }}
+            </label><br>
+        {% endfor %}
+    </div>
+
+    <h2>Enter CUIs:</h2>
+    <textarea name="cuis" rows="4" cols="50"></textarea>
+
+    <h2>Upload a File of CUIs:</h2>
+    <input type="file" name="cuis_file" id="cuis_file">
+
+    <br><br>
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+    const categorySelect = document.getElementById("categorySelect");
+    const modelOutOptions = document.getElementById("modelOptions");
+
+    categorySelect.addEventListener("change", () => {
+        const selectedCategory = categorySelect.value;
+        const modelOptions = document.querySelectorAll(".modelOption");
+
+        modelOutOptions.style.display = "block";
+
+        modelOptions.forEach(option => {
+            option.style.display = option.getAttribute("data-category") === selectedCategory ? "block" : "none";
+        });
+
+    });
+</script>
+
+{% endblock %}

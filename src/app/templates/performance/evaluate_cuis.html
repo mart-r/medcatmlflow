@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate CUIs{% endblock %}
+
+{% block content %}
+<h1>Evaluate CUIs</h1>
+{% for ds_name, plot_data in graphs.items() %}
+    <img src="data:image/png;base64,{{ plot_data }}" alt="{{ ds_name }} Performance" width="960">
+{% endfor %}
+{% endblock %}
