@@ -99,12 +99,16 @@ class BuildNodesSimpleTests(unittest.TestCase):
 class GetAllTreesTests(unittest.TestCase):
 
     @classmethod
-    def get_model_link(cls, mn) -> str:
-        return f"ML: {mn}"
+    def get_model_link(cls, mn: str) -> str:
+        if mn in EXAMPLE_DATA:
+            return f"ML: {mn}"
+        return ''
 
     @classmethod
-    def get_model_descr(cls, mn) -> str:
-        return f"MD: {mn}"
+    def get_model_descr(cls, mn: str) -> str:
+        if mn in EXAMPLE_DATA:
+            return f"MD: {mn}"
+        return mn
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -133,3 +137,22 @@ class GetAllTreesTests(unittest.TestCase):
             expected = DISCOVERED_NODES_PER_CATEGORY[category]
             with self.subTest(f"Category: {category}"):
                 self.assertEqual(len(data), expected)
+
+    def test_registered_models_have_links(self):
+        for data, _ in self.trees:
+            for prefix, description, mn, link in data:
+                with self.subTest(f"Model: {mn}"):
+                    if mn in EXAMPLE_DATA:
+                        self.assertTrue(link)
+                    else:
+                        self.assertFalse(link)
+
+    def test_registered_models_have_descriptions(self):
+        for data, _ in self.trees:
+            for prefix, description, mn, link in data:
+                with self.subTest(f"Model: {mn}"):
+                    if mn in EXAMPLE_DATA:
+                        self.assertNotEqual(description, mn)
+                    else:
+                        # just returns name
+                        self.assertEqual(description, mn)
