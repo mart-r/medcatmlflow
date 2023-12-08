@@ -15,10 +15,10 @@ from .performance.views import perf_bp
 
 # setup logging for root logger
 logger = logging.getLogger()
-setup_logging(logger)
 
 
 def create_app() -> Flask:
+    setup_logging(logger)
     app = Flask(__name__)
     app.debug = True
 
