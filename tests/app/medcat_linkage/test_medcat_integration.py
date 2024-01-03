@@ -1,6 +1,11 @@
-from src.app.medcat_linkage.medcat_integration import load_CAT
+from src.app.medcat_linkage.medcat_integration import (
+    load_CAT, get_model_performance_with_dataset
+)
 
 from medcat.cat import CAT
+
+import os
+from .. import TESTS_RESOURCES_PATH
 
 
 from .helpers import TestCaseWithSpacyModel, TEST_MODEL_PACK_PATH
@@ -17,3 +22,55 @@ class LoadModelTests(TestCaseWithSpacyModel):
         cat1 = load_CAT(TEST_MODEL_PACK_PATH)
         cat2 = load_CAT(TEST_MODEL_PACK_PATH)
         self.assertIs(cat1, cat2)
+
+
+class ModelPerformanceTests(TestCaseWithSpacyModel):
+    dataset_path = os.path.join(TESTS_RESOURCES_PATH, "datasets",
+                                "example_dataset.json")
+    expected_performance = {
+        'False positives': 0,
+        'False negatives': 0,
+        'True positives': 1,
+        'Precision for each CUI':
+            {
+                'C0000239': 1.0
+            },
+        'Recall for each CUI':
+            {
+                'C0000239': 1.0
+            },
+        'F1 for each CUI':
+            {
+                'C0000239': 1.0
+            },
+        'Counts for each CUI':
+            {
+                'C0000239': 1
+            },
+        'Examples for each of the fp, fn, tp':
+            {
+                'fp': {},
+                'fn': {},
+                'tp':
+                {
+                    'C0000239':
+                    [{
+                        'text': 'Some virus attacked my second csv yesterday',
+                        'cui': 'C0000239',
+                        'start': 23,
+                        'end': 33,
+                        'source value': 'second csv',
+                        'acc': 1.0,
+                        'project name': 'Mock project #1',
+                        'document name': 'Document # 1',
+                        'project id': None,
+                        'document id': None
+                    }]
+                }
+                }
+        }
+
+    def test_preformance_as_expected(self):
+        perf = get_model_performance_with_dataset(TEST_MODEL_PACK_PATH,
+                                                  self.dataset_path)
+        self.assertEqual(perf, self.expected_performance)
