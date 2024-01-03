@@ -1,6 +1,7 @@
 from src.app.medcat_linkage.metadata import create_meta, ModelMetaData
 
 import os
+from collections import defaultdict
 
 from .. import TESTS_RESOURCES_PATH
 import unittest
@@ -10,6 +11,14 @@ import shutil
 
 
 TEST_MODEL_PACK_PATH = os.path.join(TESTS_RESOURCES_PATH, "model_pack")
+
+
+class AllInDict(defaultdict):
+
+    def __contains__(self, key):
+        return True  # Always return True for any key
+
+FAKE_HASH2MCT_DICT = AllInDict(lambda: -1)
 
 
 class CreateMetaTests(unittest.TestCase):
@@ -33,6 +42,6 @@ class CreateMetaTests(unittest.TestCase):
                            description='model describes stuff',
                            category='ontology#1',
                            run_id=-1,
-                           hash2mct_id={})
+                           hash2mct_id=FAKE_HASH2MCT_DICT)
         self.assertIsInstance(meta, ModelMetaData)
 
