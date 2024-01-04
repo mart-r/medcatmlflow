@@ -91,7 +91,8 @@ def create_meta(
         category (str): The category of the model (e.g ontology)
         run_id (str): The internal run ID
         hash2mct_id (dict): The dictionary of CDB hashes mapped to MCT CDB ids
-        existing_id (Optional[str], optional): The existing CDB id if knwon. Defaults to None.
+        existing_id (Optional[str], optional): The existing CDB id if knwon.
+            Defaults to None.
 
     Returns:
         ModelMetaData: The resulting metadata.
