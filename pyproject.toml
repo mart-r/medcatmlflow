@@ -18,7 +18,7 @@ classifiers = [
 dependencies = [
     "mlflow",
     "dill~=0.3.4",
-    "medcat~=1.8.0",
+    "medcat~=1.9.0",
     "spacy>=3.1.0", # for medcat compatibility,
     "Flask",
     "Flask-SQLAlchemy",

@@ -84,8 +84,9 @@ def get_buffers(performance_results: AllModelPerformanceResults
                 fig = plt.figure(figsize=(10, 6))
                 per_ds_figures[dataset_name] = fig
             x = range(len(precision))
-            plt.plot(x, precision.values(), label=f"{model_name} Precision")
-            plt.plot(x, recall.values(), label=f"{model_name} Recall")
-            plt.plot(x, f1.values(), label=f"{model_name} F1")
+            plt.plot(x, list(precision.values()),
+                     label=f"{model_name} Precision")
+            plt.plot(x, list(recall.values()), label=f"{model_name} Recall")
+            plt.plot(x, list(f1.values()), label=f"{model_name} F1")
 
     return _get_buffers(x_vals, cuis, per_ds_figures)
