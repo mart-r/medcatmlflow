@@ -1,5 +1,6 @@
 from src.app.medcat_linkage.medcat_integration import (
-    load_CAT, get_model_performance_with_dataset
+    load_CAT, get_model_performance_with_dataset,
+    get_cui_counts_for_model,
 )
 
 from medcat.cat import CAT
@@ -74,3 +75,13 @@ class ModelPerformanceTests(TestCaseWithSpacyModel):
         perf = get_model_performance_with_dataset(TEST_MODEL_PACK_PATH,
                                                   self.dataset_path)
         self.assertEqual(perf, self.expected_performance)
+
+
+class GettingCUICountsForModelTests(TestCaseWithSpacyModel):
+    cuis = ['C0000039', 'C0000139', 'C0000239']
+    # no training
+    expected_counts = {'C0000039': 0, 'C0000139': 0, 'C0000239': 0}
+
+    def test_a(self):
+        counts = get_cui_counts_for_model(TEST_MODEL_PACK_PATH, self.cuis)
+        self.assertEqual(counts, self.expected_counts)
