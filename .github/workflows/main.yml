@@ -31,3 +31,6 @@ jobs:
       - name: Lint
         run: |
           python -m flake8 src/app
+      - name: Tests
+        run: |
+          python -m unittest discover
