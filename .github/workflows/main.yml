@@ -37,4 +37,4 @@ jobs:
           python -m unittest discover
       - name: Test-run
         run: |
-          MEDCATMLFLOW_DB_URI="sqlite:///`pwd`/temp/storage/mlflow.db" MEDCATMLFLOW_MODEL_STORAGE_PATH="`pwd`/temp/storage/" MEDCATMLFLOW_LOGS_PATH="`pwd`/temp/logs/" MEDCATMLFLOW_GUNICORN_WORKERS=1 MEDCATMLFLOW_GUNICORN_TIMEOUT=240 timeout 5m bash src/app/run_app.sh || echo "Successfully timed out"
+          MEDCATMLFLOW_DB_URI="sqlite:///`pwd`/temp/storage/mlflow.db" MEDCATMLFLOW_MODEL_STORAGE_PATH="`pwd`/temp/storage/" MEDCATMLFLOW_LOGS_PATH="`pwd`/temp/logs/" MEDCATMLFLOW_GUNICORN_WORKERS=1 MEDCATMLFLOW_GUNICORN_TIMEOUT=120 timeout 2m bash src/app/run_app.sh || echo "Successfully timed out"
