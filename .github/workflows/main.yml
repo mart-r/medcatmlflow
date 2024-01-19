@@ -35,3 +35,6 @@ jobs:
       - name: Tests
         run: |
           python -m unittest discover
+      - name: Test-run
+        run: |
+          source src/app/run_app.sh
