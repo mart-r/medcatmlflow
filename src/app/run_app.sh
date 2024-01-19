@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 set -x
-test_arg=$1
 
 # Check if the directory specified by MODEL_STORAGE_PATH exists
 if [ ! -d "$MEDCATMLFLOW_MODEL_STORAGE_PATH" ]; then
@@ -18,9 +17,6 @@ fi
 mkdir -p $MEDCATMLFLOW_LOGS_PATH
 
 # Run your application
-if [ $test_arg != "test" ]
-then
-  cd src
-fi
+cd src
 python -m gunicorn -w $MEDCATMLFLOW_GUNICORN_WORKERS -b 0.0.0.0:5000 --timeout $MEDCATMLFLOW_GUNICORN_TIMEOUT "app:create_app()"
 # python -m flask --app app.app run --host "0.0.0.0" --without-threads
