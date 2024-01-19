@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Result{% endblock %}
+
+{% block content %}
+<h1>Performance Result</h1>
+
+{% for model_id, perf in performance_results.items() %}
+    <h2>Model Name: {{ model_id }}</h2>
+    {% for ds_name, ds_perf in perf.items() %}
+        <h3>Dataset: {{ ds_name }}</h3>
+        <!-- <h4> {{ ds_perf }}</h3> -->
+        {% for key, value in ds_perf.items() %}
+            {% if not value is mapping %}
+                <p>{{ key }}: {{ value }}</p>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+{% for ds_name, plot_data in graph_paths.items() %}
+    <img src="data:image/png;base64,{{ plot_data }}" alt="{{ ds_name }} Performance" width="960">
+{% endfor %}
+
+{% endblock %}

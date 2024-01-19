@@ -5,10 +5,11 @@ import os
 
 from .mlflow_integration import (
     attempt_upload, get_all_models_dict, delete_mlflow_file,
-    get_history, get_all_experiment_names, recalc_model_metedata,
+    get_history, get_all_experiment_names, recalc_model_metadata,
     get_all_trees_with_links, has_experiment, create_mlflow_experiment,
     delete_experiment, get_all_experiments, get_model_from_id,
-    get_mlflow_from_id
+    get_mlflow_from_id, get_experiment_by_name, update_experiment_description,
+    update_model_info
 )
 
 from ..main.envs import STORAGE_PATH
@@ -61,10 +62,27 @@ def show_file_info(file_id):
                            info=model.as_dict())
 
 
+@models_bp.route('/edit_model_info/<file_id>', methods=['GET', 'POST'])
+def edit_model_info(file_id):
+    model = get_model_from_id(file_id)
+
+    if request.method == 'POST':
+        new_name = request.form['new_name']
+        new_description = request.form['new_description']
+
+        model = get_mlflow_from_id(file_id)
+        update_model_info(model, new_name, new_description)
+
+        # Redirect to the model information page after updating.
+        return redirect(url_for('modelmanage.show_file_info', file_id=file_id))
+
+    return render_template('modelmanage/edit_model_info.html', model=model)
+
+
 @models_bp.route("/recalculate_metadata/<file_id>")
 def recalculate_metadata(file_id):
     model = get_mlflow_from_id(file_id)
-    recalc_model_metedata(model)
+    recalc_model_metadata(model)
     return redirect(url_for("modelmanage.show_file_info", file_id=file_id))
 
 
@@ -119,3 +137,18 @@ def manage_experiments():
 
     return render_template('modelmanage/manage_experiments.html',
                            experiments=get_all_experiments())
+
+
+@models_bp.route('/edit_experiment/<short_name>', methods=['GET', 'POST'])
+def edit_experiment(short_name):
+    if request.method == 'POST':
+        new_description = request.form['new_description']
+        update_experiment_description(short_name, new_description)
+        return redirect(url_for('modelmanage.manage_experiments'))
+
+    experiment = get_experiment_by_name(short_name)
+    if experiment:
+        return render_template('modelmanage/edit_experiment.html',
+                               experiment=experiment)
+    else:
+        return "Experiment not found %s" % short_name, 404

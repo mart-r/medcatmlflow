@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Datasets{% endblock %}
+
+{% block content %}
+<h1>Manage Datasets</h1>
+{% if datasets %}
+    <table border="1">
+        <tr>
+            <th>Category</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>File path</th>
+            <th>Actions</th>
+        </tr>
+        {% for category, name, description, file_path in datasets %}
+        <tr>
+            <td>{{ category }}</td>
+            <td>{{ name }}</td>
+            <td>{{ description }}</td>
+            <td>{{ file_path }}</td>
+            <td>
+                <form method="post" onsubmit="return confirm('Are you sure you want to delete this dataset?');">
+                    <input type="hidden" name="dataset_name_to_delete" value="{{ name }}">
+                    <input type="submit" value="Delete">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No datasets found.</p>
+{% endif %}
+<br>
+<a href="/upload_dataset">Upload a New Dataset</a>
+{% endblock %}

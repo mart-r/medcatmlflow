@@ -7,3 +7,4 @@ Flask
 Flask-SQLAlchemy
 anytree
 gunicorn
+matplotlib

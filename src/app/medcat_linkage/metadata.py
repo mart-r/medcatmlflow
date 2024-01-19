@@ -4,7 +4,7 @@ import os
 from uuid import uuid4
 
 from dataclasses import dataclass, field, fields
-from typing import Optional
+from typing import Optional, List
 
 from mlflow.entities.model_registry import RegisteredModel
 
@@ -23,12 +23,12 @@ class ModelMetaData:
     description: str
     category: str
     version: str
-    version_history: list[str]
+    version_history: List[str]
     # tertiary descriptors
     cdb_hash: str
     stats: dict
     performance: dict
-    changed_parts: list[str]
+    changed_parts: List[str]
     # stuff that describes mlflow things
     model_file_name: str
     run_id: str
@@ -38,7 +38,7 @@ class ModelMetaData:
         return dict((key, getattr(self, key)) for key in self.get_keys())
 
     @classmethod
-    def get_keys(cls) -> list[str]:
+    def get_keys(cls) -> List[str]:
         return [field.name for field in fields(cls)]
 
     @classmethod
@@ -76,6 +76,27 @@ def create_meta(
     hash2mct_id: dict,
     existing_id: Optional[str] = None
 ) -> ModelMetaData:
+    """Create model metadata.
+
+    This will method load the model and read the data from the model
+    and create a metadata object.
+
+    The idea is that we then don't have to load the entire model
+    every time we want to know something about it.
+
+    Args:
+        file_path (str): The path to the model .zip
+        model_name (str): The (short) name of the model
+        description (str): The model description
+        category (str): The category of the model (e.g ontology)
+        run_id (str): The internal run ID
+        hash2mct_id (dict): The dictionary of CDB hashes mapped to MCT CDB ids
+        existing_id (Optional[str], optional): The existing CDB id if knwon.
+            Defaults to None.
+
+    Returns:
+        ModelMetaData: The resulting metadata.
+    """
     model_file_name = os.path.basename(file_path)
     cat = load_CAT(file_path)
     version = cat.config.version.id
@@ -83,7 +104,7 @@ def create_meta(
     # make sure it's a deep copy
     performance = copy.deepcopy(cat.config.version.performance)
     # in case something gets modified - nothing right now
-    changed_parts = []
+    changed_parts: List[str] = []
     cdb_hash = cat.cdb.get_hash()
     if cdb_hash in hash2mct_id:
         mct_cdb_id = hash2mct_id[cdb_hash]
