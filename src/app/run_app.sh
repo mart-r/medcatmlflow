@@ -18,5 +18,5 @@ mkdir -p $MEDCATMLFLOW_LOGS_PATH
 
 # Run your application
 cd src
-python -m gunicorn -w $MEDCATMLFLOW_GUNICORN_WORKERS -b 0.0.0.0:5000 --timeout $MEDCATMLFLOW_GUNICORN_TIMEOUT app:app
+python -m gunicorn -w $MEDCATMLFLOW_GUNICORN_WORKERS -b 0.0.0.0:5000 --timeout $MEDCATMLFLOW_GUNICORN_TIMEOUT "app:create_app()"
 # python -m flask --app app.app run --host "0.0.0.0" --without-threads
