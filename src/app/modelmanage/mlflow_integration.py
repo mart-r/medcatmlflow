@@ -19,7 +19,7 @@ from ..main.envs import STORAGE_PATH
 from ..main.envs import MEDCATMLFLOW_DB_URI
 
 # this will be initialised
-MLFLOW_CLIENT: Optional[MlflowClient] = None
+MLFLOW_CLIENT: MlflowClient = None
 
 
 logger = logging.getLogger(__name__)
