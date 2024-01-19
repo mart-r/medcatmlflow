@@ -16,9 +16,9 @@ from ..main.utils import build_nodes, get_all_trees, NoSuchModelExcepton
 from ..main.envs import STORAGE_PATH
 
 # Configure MLflow
-from ..main.envs import DB_URI
+from ..main.envs import MEDCATMLFLOW_DB_URI
 
-MLFLOW_CLIENT = MlflowClient(tracking_uri=DB_URI)
+MLFLOW_CLIENT = MlflowClient(tracking_uri=MEDCATMLFLOW_DB_URI)
 
 logger = logging.getLogger(__name__)
 
