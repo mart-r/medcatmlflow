@@ -12,6 +12,7 @@ from .main.utils import setup_logging
 from .main.views import main_bp
 from .modelmanage.views import models_bp
 from .performance.views import perf_bp
+from .modelmanage.mlflow_integration import setup_mlflow
 
 # setup logging for root logger
 logger = logging.getLogger()
@@ -24,6 +25,9 @@ def create_app() -> Flask:
 
     # setup the database
     setup_db(app)
+
+    # setup mlflow
+    setup_mlflow()
 
     # setup blueprints
 
