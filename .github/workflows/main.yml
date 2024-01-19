@@ -37,4 +37,4 @@ jobs:
           python -m unittest discover
       - name: Test-run
         run: |
-          timeout 2m bash src/app/run_app.sh
+          MEDCATMLFLOW_MODEL_STORAGE_PATH="temp/storage/" MEDCATMLFLOW_LOGS_PATH="temp/logs/" MEDCATMLFLOW_GUNICORN_WORKERS=1 MEDCATMLFLOW_GUNICORN_TIMEOUT=120 timeout 2m bash src/app/run_app.sh
