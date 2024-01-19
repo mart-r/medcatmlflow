@@ -18,9 +18,16 @@ from ..main.envs import STORAGE_PATH
 # Configure MLflow
 from ..main.envs import MEDCATMLFLOW_DB_URI
 
-MLFLOW_CLIENT = MlflowClient(tracking_uri=MEDCATMLFLOW_DB_URI)
+# this will be initialised
+MLFLOW_CLIENT: Optional[MlflowClient] = None
+
 
 logger = logging.getLogger(__name__)
+
+
+def setup_mlflow():
+    global MLFLOW_CLIENT
+    MLFLOW_CLIENT = MlflowClient(tracking_uri=MEDCATMLFLOW_DB_URI)
 
 
 def has_experiment(name: str) -> bool:
