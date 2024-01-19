@@ -37,4 +37,4 @@ jobs:
           python -m unittest discover
       - name: Test-run
         run: |
-          timeout 2m source src/app/run_app.sh
+          timeout 2m bash src/app/run_app.sh
